@@ -24,7 +24,7 @@ setup(
 	long_description=long_description,
 	# scripts=glob(os.path.join('clusterpluck', 'scripts', '*py')),
 	keywords='',
-	install_requires=['numpy', 'pandas'],
+	install_requires=['numpy'],
 	entry_points=dict(console_scripts=[
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
 	]),
