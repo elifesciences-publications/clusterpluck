@@ -27,9 +27,9 @@ setup(
 	install_requires=['numpy'],
 	entry_points=dict(console_scripts=[
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
-		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq',
-		'blastp_to_matrix = clusterpluck.scripts.blastp_to_matrix',
-		'combine_metrics = clusterpluck.scripts.combine_metrics',
-		'orfs_in_common = clusterpluck.scripts.orfs_in_common',
+		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq:main',
+		'blastp_to_matrix = clusterpluck.scripts.blastp_to_matrix:main',
+		'combine_metrics = clusterpluck.scripts.combine_metrics:main',
+		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 	]),
 )
