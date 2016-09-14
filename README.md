@@ -11,7 +11,7 @@ conda create -n clusterpluck python=3
 ```
 Now activate the environment.
 ```
-source activate shogun
+source activate clusterpluck
 ```
 With the shogun environment activated, install the clusterpluck package and the NINJA-utils developmental tools.
 
