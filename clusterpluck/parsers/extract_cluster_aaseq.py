@@ -5,6 +5,7 @@
 # coding sequence (CDS) listed in an faa-like file. The cluster module ID is listed as:
 # >NC_011593.1.cluster001_ctg1_orf00220 for example.
 
+import argparse
 import os
 import os.path
 import re
