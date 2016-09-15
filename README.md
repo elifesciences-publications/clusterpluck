@@ -1,6 +1,6 @@
 clusterpluck
 =======
-A Python package designed to efficiently process antiSMASH results from large genome databases, with the ability to group homologous clusters into Operational Functional Units (OFUs).
+A Python package designed to efficiently process antiSMASH* results from large genome databases, with the ability to group homologous clusters into Operational Functional Units (OFUs).
 
 ##Installation
 
@@ -29,3 +29,4 @@ If you do not have pandas installed, install (or update) pandas
 conda install pandas
 ```
 
+*Weber T, Blin K, Duddela S, Krug D, Kim HU, Bruccoleri R, Lee SY, Fischbach MA, Müller R, Wohlleben W, Breitling R. (2015). antiSMASH 3.0—a comprehensive resource for the genome mining of biosynthetic gene clusters. Nucleic acids research, 43(W1), W237-W243.
