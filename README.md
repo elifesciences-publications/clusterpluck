@@ -1,5 +1,7 @@
 clusterpluck
 =======
+A Python package designed to efficiently process antiSMASH results from large genome databases, with the ability to group homologous clusters into Operational Functional Units (OFUs).
+=======
 ##Installation
 
 These instructions are written for OSX systems (tested on 10.11.6). This package requires anaconda, which is a system agnostic package and virtual environment manager. Follow the installation instructions for your system at http://conda.pydata.org/miniconda.html.
