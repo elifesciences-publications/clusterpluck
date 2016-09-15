@@ -15,7 +15,7 @@ Now activate the environment.
 ```
 source activate clusterpluck
 ```
-With the shogun environment activated, install the clusterpluck package and the NINJA-utils developmental tools.
+With the clusterpluck environment activated, install the clusterpluck package and the NINJA-utils developmental tools.
 
 ```
 # clusterpluck
