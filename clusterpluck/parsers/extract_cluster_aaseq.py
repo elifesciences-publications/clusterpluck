@@ -8,8 +8,14 @@
 import os
 import os.path
 import re
+from clusterpluck.tools.compile_mpfa import compile_aa
 
 usage = 'extract_cluster_aaseq.py'
+
+def make_arg_parser():
+	parser = argparse.ArgumentParser(description='Convert blastp output txt table to a scores matrix in csv format')
+	parser.add_argument('-c', '--compile', help='Also compile all ORF amino acid sequences per genome.', action='store_true', default=False)
+	return parser
 
 def parse_aa(rdir):
 	filelist = os.listdir(rdir)
@@ -74,6 +80,8 @@ def parse_aa(rdir):
 
 
 def main():
+	parser = make_arg_parser()
+	args = parser.parse_args()
 	if os.getcwd().split('/')[-1] == 'antismash_results':
 		for rdir in os.listdir('.'):
 			if rdir.startswith('GCF'):
@@ -81,8 +89,24 @@ def main():
 			else:
 				pass
 	else:
-		print('\nERROR:\nRun this script from within the antismash_results directory containing the results for each genome\n')
+		print('\nERROR:\nYou must run this script from within the antismash_results directory containing the results for each genome\n')
 		quit()
+
+	if args.compile:
+		if "compiled_cluster_aa_seqs" not in os.listdir('.'):
+			os.mkdir("compiled_cluster_aa_seqs")
+		for cdir in os.listdir('.'):
+			if cdir.startswith('GCF'):
+				if "cluster_aa_sequences" not in os.listdir(cdir):
+					pass
+				else:
+					fname = cdir.strip('_genomic')
+					outfilename = fname + '_cluster_aa_seqs.mpfa'
+					outfile = open(os.path.join("compiled_cluster_aa_seqs", outfilename), 'w')
+					compile_aa(cdir, outfile)
+					outfile.close()
+			else:
+				pass
 
 if __name__ == '__main__':
 	main()
