@@ -13,10 +13,12 @@ from clusterpluck.tools.compile_mpfa import compile_aa
 
 usage = 'extract_cluster_aaseq.py'
 
+
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Convert blastp output txt table to a scores matrix in csv format')
 	parser.add_argument('-c', '--compile', help='Also compile all ORF amino acid sequences per genome.', action='store_true', default=False)
 	return parser
+
 
 def parse_aa(rdir):
 	filelist = os.listdir(rdir)
@@ -47,9 +49,9 @@ def parse_aa(rdir):
 							if line.startswith("                     /locus_tag"):
 								p = re.compile(r"^(\s+)(/locus_tag=)\"(ctg)(\d_\w+)\"")
 								m = p.search(line)  # searches using the regex defined above
-								outfileM = ''.join(m.group(3, 4))
+								outfile_m = ''.join(m.group(3, 4))
 								outfile.write(header_f + '_')  # use the filename to ID the file on the first line
-								outfile.write(outfileM + '\n')
+								outfile.write(outfile_m + '\n')
 							if line.startswith('                     /translation'):
 								sequence_begin = True
 							if sequence_begin:

@@ -31,5 +31,6 @@ setup(
 		'blastp_to_matrix = clusterpluck.scripts.blastp_to_matrix:main',
 		'combine_metrics = clusterpluck.scripts.combine_metrics:main',
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
+		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 	]),
 )
