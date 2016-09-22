@@ -7,9 +7,9 @@ from ninja_utils.parsers import FASTA
 from ninja_utils.utils import find_between
 
 # >ncbi_tid|206672|ref|NC_004307.2_cluster004_ctg1_orf02030|organism|Bifidobacterium_longum|
+
+
 # The arg parser
-
-
 def make_arg_parser():
 	parser = argparse.ArgumentParser(
 		description='Build a dictionary to store the list of ORFs for clusters in each genome')
@@ -20,7 +20,7 @@ def make_arg_parser():
 
 # define the dictionary function
 def build_cluster_map(inf, bread='ref|,|'):
-	begin,end = bread.split(',')
+	begin, end = bread.split(',')
 	cluster_map = defaultdict(set)
 	fasta_gen = FASTA(inf)
 	for header, sequence in fasta_gen.read():

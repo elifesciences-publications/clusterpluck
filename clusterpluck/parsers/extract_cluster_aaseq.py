@@ -15,7 +15,7 @@ usage = 'extract_cluster_aaseq.py'
 
 
 def make_arg_parser():
-	parser = argparse.ArgumentParser(description='Convert blastp output txt table to a scores matrix in csv format')
+	parser = argparse.ArgumentParser(description='Extracts amino acid sequence of each ORF from the antismash results files')
 	parser.add_argument('-c', '--compile', help='Also compile all ORF amino acid sequences per genome.', action='store_true', default=False)
 	return parser
 

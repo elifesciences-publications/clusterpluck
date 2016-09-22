@@ -33,7 +33,7 @@ def main():
 	with open(args.input) as blast_inf:
 		# next(blast_inf)
 		blast_tsv = csv.reader(blast_inf, delimiter='\t')
-	# line[0] qname, line[1] = rname, line[2] = %match, line[10] = evalue, line[11] = bitscore
+	# line[0] query name, line[1] = reference name, line[2] = % match, line[10] = e-value, line[11] = bitscore
 		if args.score == 'bitscore':
 			for line in blast_tsv:
 				# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
@@ -75,7 +75,7 @@ def main():
 				# cname = ''.join(m.group(1, 2, 3))
 				# rname = ''.join(n.group(1, 2, 3))
 				# if mref == nref:
-				# 	continue
+				# 	pass
 				# else:
 				ivalue = np.float(line[2])
 				if ivalue > args.threshold:
