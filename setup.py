@@ -32,6 +32,6 @@ setup(
 		'combine_metrics = clusterpluck.scripts.combine_metrics:main',
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
-		'ofu_matrix = clusterpluck.tools.orf_matrix:main',
+		'ofu_matrix = clusterpluck.tools.ofu_matrix:main',
 	]),
 )
