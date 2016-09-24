@@ -67,7 +67,7 @@ def main():
 					ncbi_tid = refseq_to_tid(refseq_id)
 					genus_species = organism.split(';')[-1]
 					genus_species = genus_species.replace('s__', '')
-					strain_label.append('ncbi_tid|%d|ref|%s|organism|%s' % (ncbi_tid, ref, genus_species))
+					strain_label.append('ncbi_tid|%d|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
 				df.index = strain_label
 			else:
 				pass
