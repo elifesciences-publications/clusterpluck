@@ -62,9 +62,9 @@ def main():
 			if args.annotate:
 				strain_label = []
 				refseq_list = list(df.index)
-				for ref in refseq_list:
-					organism = refseq_to_name(ref)
-					ncbi_tid = refseq_to_tid(ref)
+				for refseq_id in refseq_list:
+					organism = refseq_to_name(refseq_id)
+					ncbi_tid = refseq_to_tid(refseq_id)
 					genus_species = organism.split(';')[-1]
 					genus_species = genus_species.replace('s__', '')
 					strain_label.append('ncbi_tid|%d|ref|%s|organism|%s' % (ncbi_tid, ref, genus_species))
