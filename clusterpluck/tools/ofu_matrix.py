@@ -6,8 +6,8 @@ import csv
 import numpy as np
 import pandas as pd
 from collections import defaultdict
-# from clusterpluck.tools.annotations import refseq_to_tid
-# from clusterpluck.tools.annotations import refseq_to_name
+from clusterpluck.tools.annotations import refseq_to_tid
+from clusterpluck.tools.annotations import refseq_to_name
 
 
 # The arg parser

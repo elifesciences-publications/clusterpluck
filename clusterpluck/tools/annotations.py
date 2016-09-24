@@ -2,9 +2,7 @@
 
 import argparse
 import sys
-import os
 
-from ninja_utils.parsers import FASTA
 from ninja_dojo.database import RefSeqDatabase
 from ninja_dojo.taxonomy import NCBITree
 
