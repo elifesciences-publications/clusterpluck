@@ -6,6 +6,8 @@ import csv
 import numpy as np
 import pandas as pd
 from collections import defaultdict
+# from clusterpluck.tools.annotations import refseq_to_tid
+# from clusterpluck.tools.annotations import refseq_to_name
 
 
 # The arg parser
@@ -13,6 +15,7 @@ def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Generates a binary OFU matrix (genomes vs BGCs) from clustered clusters')
 	parser.add_argument('-i', '--input', help='Input file: a CSV of the BGCs and hclust clusters from R.', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
+	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_true', default=False)
 	return parser
 
 
@@ -21,6 +24,7 @@ def outer(size):
 	return lambda: np.zeros(size, dtype=np.int)
 
 
+# build the ofu table from an hclus (in R) generated csv
 def cluster_ofus(inf2, dd):
 	ofu_names = []
 	hcsv = csv.reader(inf2, delimiter=',')
@@ -31,10 +35,10 @@ def cluster_ofus(inf2, dd):
 		ofu = int(line[1])
 		ofu_name = ('ofu', str('%03d' % int(ofu)))
 		ofu_names.append('_'.join(ofu_name))
-		dd[refseq_id][ofu] += 1
+		dd[refseq_id][ofu] += 1  # adds a "1" to the reference for that clustered OFU for this organism
 	df = pd.DataFrame.from_dict(dd)
 	df = df.T
-	df.drop([0], axis=1, inplace=True)
+	df.drop([0], axis=1, inplace=True)  # removes the empty first ("0"th) OFU column
 	ofu_cols = list(set(ofu_names))
 	ofu_cols.sort()
 	df.columns = ofu_cols
@@ -49,15 +53,26 @@ def main():
 	# Parse command line
 	with open(args.input, 'r') as inf:
 		hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
-		# print(hclus)
-		size = hclus.max(0)[0]
+		size = hclus.max(0)[0]  # get the total number of clustered OFUs at the height cutoff used in R
 		size += 1
 		fill = outer(size)
 		dd = defaultdict(fill)
 		with open(args.input, 'r') as inf2:
 			df = cluster_ofus(inf2, dd)
-	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-		df.to_csv(outf)
+			if args.annotate:
+				strain_label = []
+				refseq_list = list(df.index)
+				for ref in refseq_list:
+					organism = refseq_to_name(ref)
+					ncbi_tid = refseq_to_tid(ref)
+					genus_species = organism.split(';')[-1]
+					genus_species = genus_species.replace('s__', '')
+					strain_label.append('ncbi_tid|%d|ref|%s|organism|%s' % (ncbi_tid, ref, genus_species))
+				df.index = strain_label
+			else:
+				pass
+		with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
+			df.to_csv(outf)
 
 
 if __name__ == '__main__':
