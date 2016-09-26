@@ -65,7 +65,7 @@ def main():
 		else:
 			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
 		size = hclus.max(0)[0]  # get the total number of clustered OFUs (depends on height cut)
-		print('\n...Preparing OFU profile for %d OFUs...\n' % size)
+		print('\n...Preparing OFU profile for %s OFUs...\n' % size)
 		size += 1
 		fill = outer(size)
 		dd = defaultdict(fill)
