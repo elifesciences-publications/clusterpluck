@@ -9,6 +9,9 @@ from collections import defaultdict
 from clusterpluck.tools.annotations import refseq_to_tid
 from clusterpluck.tools.annotations import refseq_to_name
 
+from ninja_dojo.database import RefSeqDatabase
+from ninja_dojo.taxonomy import NCBITree
+
 
 # The arg parser
 def make_arg_parser():
@@ -51,6 +54,7 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	# Parse command line
+
 	with open(args.input, 'r') as inf:
 		hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
 		size = hclus.max(0)[0]  # get the total number of clustered OFUs at the height cutoff used in R
@@ -60,11 +64,14 @@ def main():
 		with open(args.input, 'r') as inf2:
 			df = cluster_ofus(inf2, dd)
 			if args.annotate:
+				# Preload the Database and Tree
+				db = RefSeqDatabase()
+				nt = NCBITree()
 				strain_label = []
 				refseq_list = list(df.index)
 				for refseq_id in refseq_list:
-					organism = refseq_to_name(refseq_id)
-					ncbi_tid = refseq_to_tid(refseq_id)
+					organism = refseq_to_name(refseq_id, db=db, nt=nt)
+					ncbi_tid = refseq_to_tid(refseq_id, db=db)
 					genus_species = organism.split(';')[-1]
 					genus_species = genus_species.replace('s__', '')
 					strain_label.append('ncbi_tid|%d|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
