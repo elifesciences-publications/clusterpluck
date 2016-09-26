@@ -60,7 +60,7 @@ def main():
 
 	with open(args.input, 'r') as inf:
 		if args.clusterme:
-			print('...performing hierarchical clustering, tree cut at height of %d...\n' % args.height)
+			print('...performing hierarchical clustering, tree cut at height of %s...\n' % args.height)
 			hclus = process_hierarchy(inf, h=args.height)
 		else:
 			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
@@ -98,6 +98,7 @@ def main():
 
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 		df.to_csv(outf)
+	print('.. all done, cleaning up...\n')
 	os.remove('hcsv_temp.csv')
 
 if __name__ == '__main__':
