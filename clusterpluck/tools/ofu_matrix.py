@@ -39,7 +39,7 @@ def cluster_ofus(inf2, dd):
 		name = line[0]
 		refseq_id = '_'.join(name.split('_')[0:2])
 		ofu = int(line[1])
-		ofu_name = ('ofu', str('%03d' % int(ofu)))
+		ofu_name = ('ofu', str('%03d' % ofu))
 		ofu_names.append('_'.join(ofu_name))
 		dd[refseq_id][ofu] += 1  # adds a "1" to the reference for that clustered OFU for this organism
 	df = pd.DataFrame.from_dict(dd)

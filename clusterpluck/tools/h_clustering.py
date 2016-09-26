@@ -28,6 +28,7 @@ def process_hierarchy(inf, h):
 	hclus = cut_tree(li, height=h)
 	hclus = pd.DataFrame(hclus)
 	hclus = hclus.set_index(strains)
+	hclus.ix[:, 0] += 1
 	return hclus
 
 
