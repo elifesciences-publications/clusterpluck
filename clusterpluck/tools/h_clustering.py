@@ -23,6 +23,7 @@ def process_hierarchy(inf, h):
 	strains = df.index
 	li = linkage(df, method='ward', metric='euclidean')
 	hclus = cut_tree(li, height=h)
+	hclus = pd.DataFrame(li)
 	hclus = hclus.set_index(strains)
 	return hclus
 
