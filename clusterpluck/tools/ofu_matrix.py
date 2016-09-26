@@ -8,7 +8,7 @@ import pandas as pd
 from collections import defaultdict
 from clusterpluck.tools.annotations import refseq_to_tid
 from clusterpluck.tools.annotations import refseq_to_name
-
+from clusterpluck.tools.h_clustering import process_hierarchy
 from ninja_dojo.database import RefSeqDatabase
 from ninja_dojo.taxonomy import NCBITree
 
@@ -16,9 +16,11 @@ from ninja_dojo.taxonomy import NCBITree
 # The arg parser
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Generates a binary OFU matrix (genomes vs BGCs) from clustered clusters')
-	parser.add_argument('-i', '--input', help='Input file: a CSV of the BGCs and hclust clusters.', required=True)
+	parser.add_argument('-i', '--input', help='Input file: either a hierarchical cluster output CSV or a scores matrix CSV (if latter, include -c flag to perform clustering', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
 	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_true', default=False)
+	parser.add_argument('-c', '--clusterme', help='If a scores matrix is provided, include this to perform hierarchical clustering', action='store_true', required=False, default=False)
+	parser.add_argument('-h', '--height', help='If clustering, at what height to cut the tree', required=False, default=200)
 	return parser
 
 
@@ -56,7 +58,10 @@ def main():
 	# Parse command line
 
 	with open(args.input, 'r') as inf:
-		hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
+		if args.clusterme:
+			hclus = process_hierarchy(inf, h=args.height)
+		else:
+			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
 		size = hclus.max(0)[0]  # get the total number of clustered OFUs at the height cutoff used in R
 		size += 1
 		fill = outer(size)

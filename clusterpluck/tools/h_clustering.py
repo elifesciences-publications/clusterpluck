@@ -1,6 +1,7 @@
 #!/usr/bin/env Python
 
 import argparse
+import sys
 import pandas as pd
 from scipy.cluster.hierarchy import linkage
 from scipy.cluster.hierarchy import cut_tree
