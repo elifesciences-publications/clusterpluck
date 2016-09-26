@@ -27,13 +27,21 @@ def assembly_to_tid(assembly):
 
 
 def refseq_to_tid(refseq_id, db = RefSeqDatabase()):
-	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)[0]
+	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)
+	if ncbi_tid:
+		ncbi_tid = ncbi_tid[0]
+	else:
+		ncbi_tid = refseq_id
 	return ncbi_tid
 
 
 def refseq_to_name(refseq_id, db = RefSeqDatabase(), nt = NCBITree()):
-	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)[0]
-	organism = nt.green_genes_lineage(ncbi_tid)
+	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)
+	if ncbi_tid:
+		ncbi_tid = ncbi_tid[0]
+		organism = nt.green_genes_lineage(ncbi_tid)
+	else:
+		organism = refseq_id
 	return organism
 
 
