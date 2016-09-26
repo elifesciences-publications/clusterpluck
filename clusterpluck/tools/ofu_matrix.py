@@ -93,10 +93,10 @@ def main():
 			df.index = strain_label
 		else:
 			pass
-	os.remove('hcsv.temp.csv')
+
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 		df.to_csv(outf)
-
+	os.remove('hcsv_temp.csv')
 
 if __name__ == '__main__':
 	main()
