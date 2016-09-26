@@ -16,7 +16,7 @@ from ninja_dojo.taxonomy import NCBITree
 # The arg parser
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Generates a binary OFU matrix (genomes vs BGCs) from clustered clusters')
-	parser.add_argument('-i', '--input', help='Input file: a CSV of the BGCs and hclust clusters from R.', required=True)
+	parser.add_argument('-i', '--input', help='Input file: a CSV of the BGCs and hclust clusters.', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
 	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_true', default=False)
 	return parser
