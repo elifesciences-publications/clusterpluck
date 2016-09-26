@@ -1,6 +1,7 @@
 #!/usr/bin/env Python
 
 import argparse
+import os
 import sys
 import csv
 import numpy as np
@@ -15,12 +16,12 @@ from ninja_dojo.taxonomy import NCBITree
 
 # The arg parser
 def make_arg_parser():
-	parser = argparse.ArgumentParser(description='Generates a binary OFU matrix (genomes vs BGCs) from clustered clusters')
+	parser = argparse.ArgumentParser(description='Generates an OFU profile key (genomes vs clustered OFUs) from clustered clusters')
 	parser.add_argument('-i', '--input', help='Input file: either a hierarchical cluster output CSV or a scores matrix CSV (if latter, include -c flag to perform clustering', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
 	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_true', default=False)
-	parser.add_argument('-c', '--clusterme', help='If a scores matrix is provided, include this to perform hierarchical clustering', action='store_true', required=False, default=False)
-	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree', required=False, default=200)
+	parser.add_argument('-c', '--clusterme', help='If a percent identity scores matrix is provided, this will also perform hierarchical clustering', action='store_true', required=False, default=False)
+	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree', required=False, default=0.3)
 	return parser
 
 
@@ -62,33 +63,39 @@ def main():
 			hclus = process_hierarchy(inf, h=args.height)
 		else:
 			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
-		size = hclus.max(0)[0]  # get the total number of clustered OFUs at the height cutoff used in R
+		size = hclus.max(0)[0]  # get the total number of clustered OFUs (depends on height cut)
 		size += 1
 		fill = outer(size)
 		dd = defaultdict(fill)
-		with open(args.input, 'r') as inf2:
-			df = cluster_ofus(inf2, dd)
-			if args.annotate:
-				# Preload the Database and Tree
-				db = RefSeqDatabase()
-				nt = NCBITree()
-				strain_label = []
-				refseq_list = list(df.index)
-				for refseq_id in refseq_list:
-					organism = refseq_to_name(refseq_id, db=db, nt=nt)
-					ncbi_tid = refseq_to_tid(refseq_id, db=db)
-					ncbi_tid = str(ncbi_tid)
-					genus_species = organism.split(';')[-1]
-					genus_species = genus_species.replace('s__', '')
-					if ncbi_tid == organism:
-						strain_label.append(refseq_id)
-					else:
-						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
-				df.index = strain_label
-			else:
-				pass
-		with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-			df.to_csv(outf)
+		if args.clusterme:
+			hclus.to_csv('hcsv_temp.csv')
+			with open('hcsv_temp.csv', 'r') as inf2:
+				df = cluster_ofus(inf2, dd)
+		else:
+			with open(args.input, 'r') as inf2:
+				df = cluster_ofus(inf2, dd)
+		if args.annotate:
+			# Preload the Database and Tree
+			db = RefSeqDatabase()
+			nt = NCBITree()
+			strain_label = []
+			refseq_list = list(df.index)
+			for refseq_id in refseq_list:
+				organism = refseq_to_name(refseq_id, db=db, nt=nt)
+				ncbi_tid = refseq_to_tid(refseq_id, db=db)
+				ncbi_tid = str(ncbi_tid)
+				genus_species = organism.split(';')[-1]
+				genus_species = genus_species.replace('s__', '')
+				if ncbi_tid == organism:
+					strain_label.append(refseq_id)
+				else:
+					strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
+			df.index = strain_label
+		else:
+			pass
+	os.remove('hcsv.temp.csv')
+	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
+		df.to_csv(outf)
 
 
 if __name__ == '__main__':
