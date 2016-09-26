@@ -60,10 +60,12 @@ def main():
 
 	with open(args.input, 'r') as inf:
 		if args.clusterme:
+			print('...performing hierarchical clustering, tree cut at height of %d...\n' % args.height)
 			hclus = process_hierarchy(inf, h=args.height)
 		else:
 			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
 		size = hclus.max(0)[0]  # get the total number of clustered OFUs (depends on height cut)
+		print('\n...Preparing OFU profile for %d OFUs...\n' % size)
 		size += 1
 		fill = outer(size)
 		dd = defaultdict(fill)
