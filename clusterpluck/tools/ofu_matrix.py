@@ -20,7 +20,7 @@ def make_arg_parser():
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
 	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_true', default=False)
 	parser.add_argument('-c', '--clusterme', help='If a scores matrix is provided, include this to perform hierarchical clustering', action='store_true', required=False, default=False)
-	parser.add_argument('-h', '--height', help='If clustering, at what height to cut the tree', required=False, default=200)
+	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree', required=False, default=200)
 	return parser
 
 
