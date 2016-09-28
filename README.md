@@ -15,7 +15,7 @@ Now activate the environment.
 ```
 source activate clusterpluck
 ```
-With the clusterpluck environment activated, install the clusterpluck package and the NINJA-utils developmental tools from @knights-lab.
+With the clusterpluck environment activated, install the clusterpluck package and the NINJA-utils developmental tools.
 
 ```
 # clusterpluck
@@ -29,14 +29,11 @@ If you do not have pandas installed, install (or update) pandas :panda_face:
 ```
 conda install pandas
 ```
-In order to fully annotate the genomes, clusterpluck uses the NINJA-DOJO database package. If you want annotation of OFUs beyond just NCBI accession numbers (e.g. NC_000913.3), install DOJO and NINJA-SHOGUN in the clusterpluck environment.
+In order to fully annotate the genomes, clusterpluck uses the NINJA-DOJO database package. If you want annotation of OFUs beyond just NCBI accession numbers (e.g. NC_000913.3), install DOJO in the clusterpluck environment.
 
 ```
 # NINJA-DOJO
 pip install git+https://github.com/knights-lab/NINJA-DOJO.git --no-cache-dir --upgrade
-
-# NINJA-SHOGUN
-pip install git+https://github.com/knights-lab/NINJA-SHOGUN.git --no-cache-dir --upgrade
 ```
 
 ______________

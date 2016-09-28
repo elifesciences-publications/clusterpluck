@@ -39,7 +39,7 @@ def refseq_to_name(refseq_id, db=RefSeqDatabase(), nt=NCBITree()):
 		ncbi_tid = ncbi_tid[0]
 		organism = nt.green_genes_lineage(ncbi_tid)
 	else:
-		organism = refseq_id # if DOJO fails to find the tid, just return the refseq accession ID.
+		organism = refseq_id  # if DOJO fails to find the tid, just return the refseq accession ID.
 	return organism
 
 
@@ -55,7 +55,7 @@ def main():
 			ncbi_tid = refseq_to_tid(refseq_id=args.refseq)
 			organism = refseq_to_name(refseq_id=args.refseq)
 			genus_species = organism.split(';')[-1]
-			genus_species = genus_species.replace('s__','')
+			genus_species = genus_species.replace('s__', '')
 		elif args.tid != '-':
 			ncbi_tid = int(args.tid)
 		outf.write('>ncbi_tid|%d|organism|%s\n' % (ncbi_tid, genus_species))
@@ -63,4 +63,3 @@ def main():
 
 if __name__ == '__main__':
 	main()
-
