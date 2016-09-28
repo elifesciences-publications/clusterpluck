@@ -23,12 +23,12 @@ def process_hierarchy(inf, h):
 	df = df.fillna(0)
 	strains = df.index
 	df = 1 - (df / 100)
-	df_v = ssd.squareform(df, force='tovector', checks=False)
-	li = linkage(df_v)
-	hclus = cut_tree(li, height=h)
+	df_v = ssd.squareform(df, force='tovector', checks=False)  # flatten matrix to condensed distance vector
+	li = linkage(df_v)  # create the dendrogram from the condensed distance vector
+	hclus = cut_tree(li, height=h)  # using the height (percent ID as decimal, for example), cluster OFUs from dendrogram
 	hclus = pd.DataFrame(hclus)
 	hclus = hclus.set_index(strains)
-	hclus.ix[:, 0] += 1
+	hclus.ix[:, 0] += 1  # cut_tree defaults to the first 'cluster' being named "0"; this just bumps all IDs +1
 	return hclus
 
 

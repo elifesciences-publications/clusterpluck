@@ -25,7 +25,7 @@ def make_arg_parser():
 	return parser
 
 
-# initialize the dict with zeros for each OFU
+# Define the function for the dict fill
 def outer(size):
 	return lambda: np.zeros(size, dtype=np.int)
 
@@ -41,7 +41,7 @@ def cluster_ofus(inf2, dd):
 		ofu = int(line[1])
 		ofu_name = ('ofu', str('%03d' % ofu))
 		ofu_names.append('_'.join(ofu_name))
-		dd[refseq_id][ofu] += 1  # adds a "1" to the reference for that clustered OFU for this organism
+		dd[refseq_id][ofu] += 1  # adds a "1" to the dictionary value for that clustered OFU for this organism
 	df = pd.DataFrame.from_dict(dd)
 	df = df.T
 	df.drop([0], axis=1, inplace=True)  # removes the empty first ("0"th) OFU column
@@ -56,8 +56,8 @@ def cluster_ofus(inf2, dd):
 def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
-	# Parse command line
 
+	# Parse command line
 	with open(args.input, 'r') as inf:
 		if args.clusterme:
 			print('...performing hierarchical clustering, tree cut at height of %s...\n' % args.height)
@@ -68,7 +68,8 @@ def main():
 		print('\n...Preparing OFU profile for %s OFUs...\n' % size)
 		size += 1
 		fill = outer(size)
-		dd = defaultdict(fill)
+		dd = defaultdict(fill)  # Initialize the dict with all zeros
+		# Collapse into an OFU reference table, strains vs OFUs
 		if args.clusterme:
 			hclus.to_csv('hcsv_temp.csv')
 			with open('hcsv_temp.csv', 'r') as inf2:
@@ -88,7 +89,7 @@ def main():
 				ncbi_tid = str(ncbi_tid)
 				genus_species = organism.split(';')[-1]
 				genus_species = genus_species.replace('s__', '')
-				if ncbi_tid == organism:
+				if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
 					strain_label.append(refseq_id)
 				else:
 					strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))

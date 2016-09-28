@@ -6,10 +6,8 @@ import sys
 from ninja_dojo.database import RefSeqDatabase
 from ninja_dojo.taxonomy import NCBITree
 
-usage = 'gcf_demystifier.py -i GCF_XXXXXXXXXX.X [-o] OUTPUT_FILE [-v]'
 
-
-# The arg parser for this wrapper
+# The arg parser
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Annotate from refseq id to tid, refseq, and/or organism taxonomy')
 	parser.add_argument('-a', '--assembly', help='Input is a GCF', default='-')
@@ -26,22 +24,22 @@ def assembly_to_tid(assembly):
 	return ncbi_tid
 
 
-def refseq_to_tid(refseq_id, db = RefSeqDatabase()):
+def refseq_to_tid(refseq_id, db=RefSeqDatabase()):
 	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)
 	if ncbi_tid:
 		ncbi_tid = ncbi_tid[0]
 	else:
-		ncbi_tid = refseq_id
+		ncbi_tid = refseq_id  # if DOJO fails to find the tid, just return the refseq accession ID.
 	return ncbi_tid
 
 
-def refseq_to_name(refseq_id, db = RefSeqDatabase(), nt = NCBITree()):
+def refseq_to_name(refseq_id, db=RefSeqDatabase(), nt=NCBITree()):
 	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)
 	if ncbi_tid:
 		ncbi_tid = ncbi_tid[0]
 		organism = nt.green_genes_lineage(ncbi_tid)
 	else:
-		organism = refseq_id
+		organism = refseq_id # if DOJO fails to find the tid, just return the refseq accession ID.
 	return organism
 
 
