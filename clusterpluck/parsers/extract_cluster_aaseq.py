@@ -47,7 +47,7 @@ def parse_aa(rdir):
 					for line in infile:
 						if title_begin:  # only do this if 'CDS  ' starts the line
 							if line.startswith("                     /locus_tag"):
-								p = re.compile(r"^(\s+)(/locus_tag=)\"(ctg)(\d_\w+)\"")
+								p = re.compile(r"^(\s+)(\/locus_tag=)\"(ctg)(\d\_\w+)\"")
 								m = p.search(line)  # searches using the regex defined above
 								outfile_m = ''.join(m.group(3, 4))
 								outfile.write(header_f + '_')  # use the filename to ID the file on the first line
@@ -56,7 +56,7 @@ def parse_aa(rdir):
 								sequence_begin = True
 							if sequence_begin:
 								if line.startswith('                     /translation'):
-									aa_p = re.compile(r"^(\s+)(\/translation\=\")([A-Z]+)")
+									aa_p = re.compile(r"^(\s+)(\/translation=\")([A-Z]+)")
 									aa_m = aa_p.search(line)  # searches using the regex defined above
 									out_aa = aa_m.group(3)
 									outfile.write(out_aa)

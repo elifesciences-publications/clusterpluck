@@ -17,7 +17,7 @@ def make_arg_parser():
 	return parser
 
 
-# initialize the dict with zeros for each OFU
+# Perform the hierarchical clustering
 def process_hierarchy(inf, h):
 	df = pd.read_csv(inf, header=0, index_col=0)
 	df = df.fillna(0)

@@ -22,7 +22,7 @@ def main():
 
 	db = RefSeqDatabase()
 	nt = NCBITree()
-    # parse command line
+	# parse command line
 	with open(args.input, 'r') if args.input != '-' else sys.stdin as inf:
 		fasta_gen = FASTA(inf)
 		assembly_version = os.path.basename(args.input).split('_genomic')[0]
