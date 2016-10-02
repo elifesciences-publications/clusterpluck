@@ -23,10 +23,9 @@ def make_arg_parser():
 def parse_aa(rdir):
 	filelist = os.listdir(rdir)
 	# debug
-	# print(filelist)
+	print(filelist)
 	header = '>'  # start each sequence's identifier with the pacman >
 	# define the start of the sequence by the CDS line
-	codingstart = 'CDS   '
 	title_begin = False
 	sequence_begin = False
 	if 'cluster_aa_sequences' not in filelist:
@@ -37,6 +36,7 @@ def parse_aa(rdir):
 			if infilename.endswith('final.gbk'):
 				pass
 			else:
+				print(infilename)
 				i += 1
 				header_f = header + infilename.replace('.gbk', '')
 				header_f = header_f.replace('.clu', '_clu')
@@ -47,7 +47,7 @@ def parse_aa(rdir):
 					for line in infile:
 						if title_begin:  # only do this if 'CDS  ' starts the line
 							if line.startswith("                     /locus_tag"):
-								p = re.compile(r"^(\s+)(\/locus_tag=)\"(ctg)(\d\_\w+)\"")
+								p = re.compile(r"^(\s+)(\/locus_tag=)\"(ctg)(\d_\w+)\"")
 								m = p.search(line)  # searches using the regex defined above
 								outfile_m = ''.join(m.group(3, 4))
 								outfile.write(header_f + '_')  # use the filename to ID the file on the first line
