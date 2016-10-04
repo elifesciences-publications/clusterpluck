@@ -96,8 +96,12 @@ def main():
 			else:
 				pass
 	else:
-		print('\nERROR:\nYou must run this script from within the antismash_results directory containing the results for each genome\n')
-		quit()
+		print('\nNOTE:\nProgram may fail if you are not in a proper antismash_results directory\n')
+		for rdir in os.listdir('.'):
+			if rdir.startswith('GCF'):
+				parse_products(rdir)
+			else:
+				pass
 	if args.compile:
 		if "compiled_cluster_types" not in os.listdir('.'):
 			os.mkdir("compiled_cluster_types")
