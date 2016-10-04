@@ -82,8 +82,8 @@ def main():
 					sparse_blast_id_dict[line[0]][line[1]] = ivalue
 
 	df = pd.DataFrame.from_dict(sparse_blast_id_dict)
-	df.sort_index(axis=0)
-	df.sort_index(axis=1)
+	df.sort_index(axis=0, inplace=True)
+	df.sort_index(axis=1, inplace=True)
 	# Check if a matrix is symmetric
 	# arr = df.values
 	# print((arr.transpose() == -arr).all())

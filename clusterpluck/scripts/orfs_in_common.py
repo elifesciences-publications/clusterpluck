@@ -11,7 +11,7 @@ from clusterpluck.scripts.cluster_dictionary import build_cluster_map
 
 # The arg parser
 def make_arg_parser():
-	parser = argparse.ArgumentParser(description='Report how many orfs are matched in the corresponding cluster')
+	parser = argparse.ArgumentParser(description='Report how many ORFs are matched between two clusters with some identity')
 	parser.add_argument('-i', '--input', help='Input is the ORF matrix CSV file.', default='-')
 	parser.add_argument('-m', '--mpfa', help='The multi-protein fasta file (.mpfa) from which to build the dictionary')
 	parser.add_argument('-b', '--bread', help='Where to find the cluster information in the header for the sequence (default="ref|,|")', default='ref|,|')
@@ -38,14 +38,15 @@ def cluster_completeness(cluster_map, in_csv):
 			cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
 			if cc_mean > 0:
 				# calculates the fraction of orf coverage by the match
-				orf_rate = (j_mx + i_mx) / (j_orfs + i_orfs)
+				orf_rate = (j_mx + i_mx) / (j_orfs + i_orfs)  # one way of doing it
+				# orf_rate = ((j_mx / j_orfs) + (i_mx / i_orfs)) / 2  # alternative metric
 			else:
 				orf_rate = cc_mean
 			# saves this ratio in a dictionary
 			cluster_coverage[cluster][cluster2] = orf_rate
 	coverage_matrix = pd.DataFrame.from_dict(cluster_coverage, orient='columns', dtype=float)
-	coverage_matrix.sort_index(axis=0)
-	coverage_matrix.sort_index(axis=1)
+	coverage_matrix.sort_index(axis=0, inplace=True)
+	coverage_matrix.sort_index(axis=1, inplace=True)
 	# print(coverage_matrix)
 	return coverage_matrix
 

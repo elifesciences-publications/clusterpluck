@@ -23,7 +23,7 @@ def make_arg_parser():
 def parse_aa(rdir):
 	filelist = os.listdir(rdir)
 	# debug
-	print(filelist)
+	# print(filelist)
 	header = '>'  # start each sequence's identifier with the pacman >
 	# define the start of the sequence by the CDS line
 	title_begin = False
