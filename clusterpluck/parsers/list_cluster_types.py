@@ -75,8 +75,9 @@ def parse_products(rdir):
 def compile_types(cdir, outf):
 	for file in os.listdir(os.path.join(cdir, 'cluster_types')):
 		if file.endswith('.csv'):
-			print(file)
+			# print(file)
 			with open(os.path.join(cdir, 'cluster_types', file), 'r') as infile:
+				next(infile)
 				for line in infile:
 					outf.write(line)
 			infile.close()
@@ -100,16 +101,15 @@ def main():
 	if args.compile:
 		if "compiled_cluster_types" not in os.listdir('.'):
 			os.mkdir("compiled_cluster_types")
-		for cdir in os.listdir('.'):
-			if cdir.startswith('GCF'):
-				if "cluster_types" not in os.listdir(cdir):
-					pass
-				else:
-					fname = cdir.strip('_genomic')
-					outfilename = fname + '_cluster_types.csv'
-					outf = open(os.path.join("compiled_cluster_types", outfilename), 'w')
-					outf = compile_types(cdir, outf)
-					outf.close()
+		outfilename = 'compiled_cluster_types.csv'
+		with open(os.path.join("compiled_cluster_types", outfilename), 'w') as outf:
+			for cdir in os.listdir('.'):
+				if cdir.startswith('GCF'):
+					if "cluster_types" not in os.listdir(cdir):
+						pass
+					else:
+						outf = compile_types(cdir, outf)
+			outf.close()
 	if args.annotate:
 		if not args.compile:
 			print('\nSORRY:\nAnnotation only available with compiled option (-c)\n')
@@ -119,19 +119,23 @@ def main():
 			db = RefSeqDatabase()
 			nt = NCBITree()
 			strain_label = []
-			odf = pd.read_csv(outf, header=0, index_col=0)
-			refseq_list = list(odf.index)
-			for refseq_id in refseq_list:
-				organism = refseq_to_name(refseq_id, db=db, nt=nt)
-				ncbi_tid = refseq_to_tid(refseq_id, db=db)
-				ncbi_tid = str(ncbi_tid)
-				# genus_species = organism.split(';')[-1]
-				# genus_species = genus_species.replace('s__', '')
-				if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
-					strain_label.append(refseq_id)
-				else:
-					strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, organism))
-			df.index = strain_label
+			with open(os.path.join('compiled_cluster_types', 'compiled_cluster_types.csv')) as intab:
+				odf = pd.read_csv(intab, index_col=0)
+				refseq_list = list(odf.index)
+				for refseq_id in refseq_list:
+					organism = refseq_to_name(refseq_id, db=db, nt=nt)
+					ncbi_tid = refseq_to_tid(refseq_id, db=db)
+					ncbi_tid = str(ncbi_tid)
+					# genus_species = organism.split(';')[-1]
+					# genus_species = genus_species.replace('s__', '')
+					if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
+						strain_label.append(refseq_id)
+					else:
+						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, organism))
+				odf.index = strain_label
+				an_outn = 'annotated_cluster_types.csv'
+			with open(os.path.join('compiled_cluster_types', an_outn), 'w') as an_outf:
+				odf.to_csv(an_outf)
 	else:
 		pass
 
