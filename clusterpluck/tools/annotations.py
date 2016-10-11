@@ -37,7 +37,7 @@ def refseq_to_name(refseq_id, db=RefSeqDatabase(), nt=NCBITree()):
 	ncbi_tid = db.get_ncbi_tid_from_refseq_accession(refseq_id)
 	if ncbi_tid:
 		ncbi_tid = ncbi_tid[0]
-		organism = nt.green_genes_lineage(ncbi_tid)
+		organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
 	else:
 		organism = refseq_id  # if DOJO fails to find the tid, just return the refseq accession ID.
 	return organism

@@ -38,7 +38,7 @@ def parse_aa(rdir):
 			# elif not infilename.startswith('NC'):
 			# 	pass
 			else:
-				print(infilename)
+				# print(infilename)
 				i += 1
 				header_f = header + infilename.replace('.gbk', '')
 				header_f = header_f.replace('.clu', '_clu')

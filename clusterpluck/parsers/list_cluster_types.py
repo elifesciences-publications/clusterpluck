@@ -10,7 +10,6 @@ import os
 import os.path
 import re
 import pandas as pd
-import csv
 
 from collections import defaultdict
 from ninja_dojo.database import RefSeqDatabase
@@ -124,7 +123,7 @@ def main():
 			nt = NCBITree()
 			strain_label = []
 			with open(os.path.join('compiled_cluster_types', 'compiled_cluster_types.csv')) as intab:
-				odf = pd.read_csv(intab, index_col=0)
+				odf = pd.read_csv(intab, index_col=0, header=None)
 				refseq_list = list(odf.index)
 				for refseq_id in refseq_list:
 					organism = refseq_to_name(refseq_id, db=db, nt=nt)
@@ -137,6 +136,7 @@ def main():
 					else:
 						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, organism))
 				odf.index = strain_label
+				odf.columns = ['cluster_type']
 				an_outn = 'annotated_cluster_types.csv'
 			with open(os.path.join('compiled_cluster_types', an_outn), 'w') as an_outf:
 				odf.to_csv(an_outf)
