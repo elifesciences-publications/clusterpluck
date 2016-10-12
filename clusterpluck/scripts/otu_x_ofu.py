@@ -25,8 +25,12 @@ def match_tables(intax, inofu, opt):
 	for taxon in taxons:
 		n = []
 		taxon = str(taxon)
-		name = taxon.split(';')[-1]
-		name = name.replace('s__', '')
+		if taxon.endswith('t__'):
+			name = taxon.split(';')[-2]
+			name = name.replace('s__', '')
+		else:
+			name = taxon.split(';')[-1]
+			name = name.replace('t__', '')
 		t_odf = odf.filter(like=name, axis=0)
 		if t_odf.empty:
 			pass
@@ -41,7 +45,7 @@ def match_tables(intax, inofu, opt):
 			summ.columns = n
 			ofu_matched = ofu_matched.join(summ)
 		else:
-			print('\nMust enter a valid method for dealing with multiple taxon-OFU hits, either -m "average" or "summarize"\n')
+			print('\nMust enter a valid method for dealing with multiple taxon-OFU hits, either -m "average" (default) or "summarize"\n')
 			quit()
 	if not ofu_matched.empty:
 		ofu_matched = ofu_matched.T
