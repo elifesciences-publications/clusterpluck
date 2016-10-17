@@ -34,6 +34,6 @@ setup(
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
-		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main',
+		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main'
 	]),
 )
