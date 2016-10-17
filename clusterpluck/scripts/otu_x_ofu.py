@@ -15,7 +15,7 @@ def make_arg_parser():
 	return parser
 
 
-# Comment
+# Uses the taxon table to refine the OFU profile according to taxons that were actually found by SHOGUN
 def match_tables(intax, inofu, opt):
 	tdf = pd.read_csv(intax, header=0, index_col=0)
 	odf = pd.read_csv(inofu, header=0, index_col=0)
@@ -34,12 +34,12 @@ def match_tables(intax, inofu, opt):
 		t_odf = odf.filter(like=name, axis=0)
 		if t_odf.empty:
 			pass
-		elif opt == 'average':
+		elif opt == 'average':  # If resolution isn't to strain, then average the OFU counts across the higher-rank group (i.e. species)
 			mean = pd.DataFrame(t_odf.mean(axis=0))
 			n.append(taxon)
 			mean.columns = n
 			ofu_matched = ofu_matched.join(mean)
-		elif opt == 'summarize':
+		elif opt == 'summarize':  # Same as above, but here instead of averaging, just take the summary, or the maximum number of appearances for any given OFU
 			summ = pd.DataFrame(t_odf.max(axis=0))
 			n.append(taxon)
 			summ.columns = n
@@ -48,7 +48,7 @@ def match_tables(intax, inofu, opt):
 			print('\nMust enter a valid method for dealing with multiple taxon-OFU hits, either -m "average" (default) or "summarize"\n')
 			quit()
 	if not ofu_matched.empty:
-		ofu_matched = ofu_matched.T
+		ofu_matched = ofu_matched.T  # This orients the dataframe in the same way as a taxon table
 		return ofu_matched
 	else:
 		print('\nNo OTU matches found\n')
@@ -59,7 +59,7 @@ def match_tables(intax, inofu, opt):
 def multiply_tables(intaxm, ofu_matched):
 	tdf = pd.read_csv(intaxm, header=0, index_col=0)
 	tdf = tdf.fillna(0)
-	ofu_table = tdf.T.dot(ofu_matched)
+	ofu_table = tdf.T.dot(ofu_matched)  # taking the dot product in this direction gives the relative abundance of OFUs based on observations of the taxon
 	if ofu_table.empty:
 		print('\nError multiplying matrices. Check dimensions.\n')
 		exit()
