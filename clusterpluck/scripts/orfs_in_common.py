@@ -35,7 +35,9 @@ def cluster_completeness(cluster_map, in_csv):
 			mx_dubsub.dropna(axis=(1, 0), how='all', inplace=True)
 			i_mx = mx_dubsub.shape[0]
 			j_mx = mx_dubsub.shape[1]
-			cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
+			with warnings.catch_warnings():
+				warnings.simplefilter('ignore', category=RuntimeWarning)
+				cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
 			if cc_mean > 0:
 				# calculates the fraction of orf coverage by the match
 				orf_rate = (j_mx + i_mx) / (j_orfs + i_orfs)  # one way of doing it
@@ -65,6 +67,4 @@ def main():
 				coverage_matrix.to_csv(outf)
 
 if __name__ == '__main__':
-	with warnings.catch_warnings():
-		warnings.filterwarnings('ignore')
-		main()
+	main()
