@@ -30,7 +30,9 @@ def cluster_by_cluster(cluster_map, in_csv):
 			# subsets the smaller matrix by rows belonging to one cluster
 			mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
 			# finds the mean of the cells in the cluster x cluster matrix
-			cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
+			with warnings.catch_warnings():
+				warnings.simplefilter('ignore', category=RuntimeWarning)
+				cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
 			# saves this average in a dictionary
 			cluster_score[cluster][cluster2] = cc_mean
 	score_mean = pd.DataFrame.from_dict(cluster_score, orient='columns', dtype=float)
