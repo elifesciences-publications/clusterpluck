@@ -66,5 +66,5 @@ def main():
 
 if __name__ == '__main__':
 	with warnings.catch_warnings():
-		warnings.filterwarnings('ignore', message=r'Mean of empty slice', category=Warning)
+		warnings.filterwarnings('ignore', message=r'Mean of empty slice', category=RuntimeWarning)
 		main()
