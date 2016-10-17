@@ -24,7 +24,7 @@ setup(
 	long_description=long_description,
 	# scripts=glob(os.path.join('clusterpluck', 'scripts', '*py')),
 	keywords='',
-	install_requires=['numpy', 'scipy', 'blast'],
+	install_requires=['numpy', 'scipy'],
 	entry_points=dict(console_scripts=[
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
 		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq:main',
@@ -34,6 +34,6 @@ setup(
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
-		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main'
+		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main',
 	]),
 )
