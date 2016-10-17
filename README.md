@@ -19,10 +19,10 @@ With the clusterpluck environment activated, install the clusterpluck package an
 
 ```
 # clusterpluck
-pip install git+https://github.com/RRShieldsCutler/clusterpluck.git --no-cache-dir --upgrade scipy=0.18.0
+pip install git+https://github.com/RRShieldsCutler/clusterpluck.git --no-cache-dir --upgrade scipy==0.18.0
 
 # NINJA-utils
-pip install git+https://github.com/knights-lab/NINJA-utils.git --no-cache-dir --upgrade scipy=0.18.0
+pip install git+https://github.com/knights-lab/NINJA-utils.git --no-cache-dir --upgrade scipy==0.18.0
 ```
 If you do not have pandas installed, install (or update) pandas :panda_face:
 ```
@@ -32,7 +32,7 @@ In order to fully annotate the genomes, clusterpluck uses the NINJA-DOJO databas
 
 ```
 # NINJA-DOJO
-pip install git+https://github.com/knights-lab/NINJA-DOJO.git --no-cache-dir --upgrade scipy=0.18.0
+pip install git+https://github.com/knights-lab/NINJA-DOJO.git --no-cache-dir --upgrade scipy==0.18.0
 ```
 
 ______________
