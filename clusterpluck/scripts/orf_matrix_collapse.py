@@ -23,18 +23,16 @@ def make_arg_parser():
 def cluster_by_cluster(cluster_map, in_csv):
 	mx = pd.read_csv(in_csv, sep=',', header=0, index_col=0)
 	cluster_score = defaultdict(dict)
-	with warnings.catch_warnings():
-		warnings.filterwarnings('ignore', message=r'Mean of empty slice', category=Warning)
-		for cluster in cluster_map:
-			# subsets the matrix by columns belonging to one cluster
-			mx_csub = mx.filter(like=cluster)
-			for cluster2 in cluster_map:
-				# subsets the smaller matrix by rows belonging to one cluster
-				mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
-				# finds the mean of the cells in the cluster x cluster matrix
-				cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
-				# saves this average in a dictionary
-				cluster_score[cluster][cluster2] = cc_mean
+	for cluster in cluster_map:
+		# subsets the matrix by columns belonging to one cluster
+		mx_csub = mx.filter(like=cluster)
+		for cluster2 in cluster_map:
+			# subsets the smaller matrix by rows belonging to one cluster
+			mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
+			# finds the mean of the cells in the cluster x cluster matrix
+			cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
+			# saves this average in a dictionary
+			cluster_score[cluster][cluster2] = cc_mean
 	score_mean = pd.DataFrame.from_dict(cluster_score, orient='columns', dtype=float)
 	score_mean.sort_index(axis=0)
 	score_mean.sort_index(axis=1)
@@ -58,4 +56,6 @@ def main():
 				score_mean.to_csv(outf)
 
 if __name__ == '__main__':
-	main()
+	with warnings.catch_warnings():
+		warnings.filterwarnings('ignore')
+		main()
