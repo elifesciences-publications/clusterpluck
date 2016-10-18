@@ -11,7 +11,11 @@ def make_arg_parser():
 	parser.add_argument('-t', '--taxons', help='The taxon table in CSV', required=True)
 	parser.add_argument('-f', '--ofus', help='The OFU profile at a particular cut height, in CSV', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to "ofu_table.csv" in current working directory', required=False, default='ofu_table.csv')
-	parser.add_argument('-m', '--multiples', help='When multiple strains for species: [average] the OFU tallies or [summarize] all the possible OFUs', required=False, default='average')
+	parser.add_argument('-m', '--multiples', help='When multiple strains for species: '
+												'[average] the OFU tallies,'
+												'[summarize] all the possible OFUs,'
+												'select only [universal] OFUs,'
+												'select only OFUs in a [majority] of strains', required=False, default='average')
 	return parser
 
 
@@ -22,6 +26,7 @@ def match_tables(intax, inofu, opt):
 	taxons = list(tdf.index)
 	ofu_index = list(odf.columns)
 	ofu_matched = pd.DataFrame(index=ofu_index)
+	# TODO: Add summary functions for intersection (what do all strains have) and majority (what do at least half of strains have)
 	for taxon in taxons:
 		n = []
 		taxon = str(taxon)
@@ -39,11 +44,25 @@ def match_tables(intax, inofu, opt):
 			n.append(taxon)
 			mean.columns = n
 			ofu_matched = ofu_matched.join(mean)
-		elif opt == 'summarize':  # Same as above, but here instead of averaging, just take the summary, or the maximum number of appearances for any given OFU
+		elif opt == 'summarize':  # Same as above, but here just take the summary, or the maximum number of appearances for any given OFU
 			summ = pd.DataFrame(t_odf.max(axis=0))
 			n.append(taxon)
 			summ.columns = n
 			ofu_matched = ofu_matched.join(summ)
+		elif opt == 'universal':  # Same as above, but here just take the minimum set, or only OFUs shared by all strains
+			univ = pd.DataFrame(t_odf.min(axis=0))
+			n.append(taxon)
+			univ.columns = n
+			ofu_matched = ofu_matched.join(univ)
+		elif opt == 'majority':  # Same as above, but here just take the minimum set, or only OFUs shared by all strains
+			avg = pd.DataFrame(t_odf.mean(axis=0))
+			dfbool = t_odf > 0
+			maj = pd.DataFrame(dfbool.mean(axis=0))
+			maj = maj >= 0.5
+			maj = maj * avg
+			n.append(taxon)
+			maj.columns = n
+			ofu_matched = ofu_matched.join(maj)
 		else:
 			print('\nMust enter a valid method for dealing with multiple taxon-OFU hits, either -m "average" (default) or "summarize"\n')
 			quit()
