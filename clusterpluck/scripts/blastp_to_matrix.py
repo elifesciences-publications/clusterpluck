@@ -21,7 +21,7 @@ def make_arg_parser():
 	parser.add_argument('-i', '--input', help='The blast output file to process.', required=True, type=str)
 	parser.add_argument('-s', '--score', help='Which score to enter into matrix: "pident", "evalue", or "bitscore"', required=False, type=str, default='bitscore')
 	parser.add_argument('-t', '--threshold', help='The threshold (float) for entry into matrix.', required=False, type=float, default=1)
-	parser.add_argument('-o', '--output', help='Where to put the output CSV', required=True, type=str)
+	parser.add_argument('-o', '--output', help='Where to put the output (CSV or h5)', required=False, type=str, default='blastp_matrixform.csv')
 	return parser
 
 
@@ -50,6 +50,7 @@ def main():
 				bvalue = np.float(line[11])
 				if bvalue > args.threshold:
 					sparse_blast_id_dict[line[0]][line[1]] = bvalue
+		# TODO: use the evalue or pident of perfect matches to normalize the data
 		elif args.score == 'evalue':
 			for line in blast_tsv:
 				# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
@@ -87,7 +88,10 @@ def main():
 	# Check if a matrix is symmetric
 	# arr = df.values
 	# print((arr.transpose() == -arr).all())
-	df.to_csv(args.output)
+	if args.output.endswith('.csv'):
+		df.to_csv(args.output)
+	else:
+		df.to_hdf(args.output, 'table')
 
 
 if __name__ == '__main__':

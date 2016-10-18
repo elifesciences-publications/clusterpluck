@@ -22,10 +22,14 @@ def make_arg_parser():
 
 def cluster_by_cluster(cluster_map, in_csv):
 	mx = pd.read_csv(in_csv, sep=',', header=0, index_col=0)
-	cluster_score = defaultdict(dict)
+	c_list = list(cluster_map.keys())
+	ct = len(c_list)
+	mat = np.zeros((ct, ct))
+	j = 0
 	for cluster in cluster_map:
 		# subsets the matrix by columns belonging to one cluster
 		mx_csub = mx.filter(like=cluster)
+		i = 0
 		for cluster2 in cluster_map:
 			# subsets the smaller matrix by rows belonging to one cluster
 			mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
@@ -34,12 +38,16 @@ def cluster_by_cluster(cluster_map, in_csv):
 				warnings.simplefilter('ignore', category=RuntimeWarning)
 				cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
 			# saves this average in a dictionary
-			cluster_score[cluster][cluster2] = cc_mean
-	score_mean = pd.DataFrame.from_dict(cluster_score, orient='columns', dtype=float)
-	score_mean.sort_index(axis=0)
-	score_mean.sort_index(axis=1)
+			mat[i, j] = cc_mean
+			i += 1
+		j += 1
+	outdf = pd.DataFrame(mat, dtype=float)
+	outdf.columns = c_list
+	outdf.index = c_list
+	outdf.sort_index(axis=0)
+	outdf.sort_index(axis=1)
 	# print(score_mean)
-	return score_mean
+	return outdf
 	# Check if a matrix is symmetric
 	# arr = df.values
 	# print((arr.transpose() == -arr).all())
@@ -54,8 +62,9 @@ def main():
 		cluster_map = build_cluster_map(inf, bread=args.bread)
 		with open(args.input, 'r') as in_csv:
 			with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-				score_mean = cluster_by_cluster(cluster_map, in_csv)
-				score_mean.to_csv(outf)
+				outdf = cluster_by_cluster(cluster_map, in_csv)
+				outdf = outdf.round(decimals=2)
+				outdf.to_csv(outf)
 
 if __name__ == '__main__':
 	with warnings.catch_warnings():

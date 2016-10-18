@@ -19,16 +19,28 @@ def make_arg_parser():
 	return parser
 
 
-def cluster_completeness(cluster_map, in_csv):
-	mx = pd.read_csv(in_csv, sep=',', header=0, index_col=0)
+def cluster_completeness(intype, cluster_map, inf2):
+	if intype == 'csv':
+		mx = pd.read_csv(inf2, sep=',', header=0, index_col=0)
+	elif intype == 'h5':
+		mx = pd.read_hdf(inf2, 'table')
 	# list of all the clusters
-	cluster_coverage = defaultdict(dict)
-	for cluster in cluster_map:
+	# cluster_coverage = defaultdict(dict)
+	c_list = list(cluster_map.keys())
+	ct = len(c_list)
+	mat = np.zeros((ct, ct))
+	j = 0
+	for cluster in c_list:
+		# print(cluster)
 		# how many orfs in the full cluster
 		j_orfs = len(cluster_map[cluster])
 		# subsets the matrix by columns belonging to one cluster
 		mx_csub = mx.filter(like=cluster)
-		for cluster2 in cluster_map:
+		i = 0
+		for cluster2 in c_list:
+			# print(cluster2)
+			# print(i)
+			# print(j)
 			i_orfs = len(cluster_map[cluster2])
 			# subsets the smaller matrix by rows belonging to one cluster
 			mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
@@ -45,12 +57,16 @@ def cluster_completeness(cluster_map, in_csv):
 			else:
 				orf_rate = cc_mean
 			# saves this ratio in a dictionary
-			cluster_coverage[cluster][cluster2] = orf_rate
-	coverage_matrix = pd.DataFrame.from_dict(cluster_coverage, orient='columns', dtype=float)
-	coverage_matrix.sort_index(axis=0, inplace=True)
-	coverage_matrix.sort_index(axis=1, inplace=True)
-	# print(coverage_matrix)
-	return coverage_matrix
+			mat[i, j] = orf_rate
+			i += 1
+		j += 1
+	outdf = pd.DataFrame(mat, dtype=float)
+	outdf.columns = c_list
+	outdf.index = c_list
+	outdf.sort_index(axis=0, inplace=True)
+	outdf.sort_index(axis=1, inplace=True)
+	# print(outdf)
+	return outdf
 
 
 def main():
@@ -60,11 +76,12 @@ def main():
 	with open(args.mpfa, 'r') if args.mpfa != '-' else sys.stdin as inf:
 		# Generates dictionary with each unique 'refseq_cluster' as keys, ORFs as values
 		cluster_map = build_cluster_map(inf, bread=args.bread)
-		with open(args.input, 'r') as in_csv:
+		intype = str(args.input).split('.')[-1]
+		with open(args.input, 'r') as inf2:
 			with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-				coverage_matrix = cluster_completeness(cluster_map, in_csv)
-				coverage_matrix = coverage_matrix.round(decimals=3)
-				coverage_matrix.to_csv(outf)
+				outdf = cluster_completeness(intype, cluster_map, inf2)
+				outdf = outdf.round(decimals=3)
+				outdf.to_csv(outf)
 
 if __name__ == '__main__':
 	main()
