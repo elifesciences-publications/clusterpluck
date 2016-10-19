@@ -54,7 +54,7 @@ def match_tables(intax, inofu, opt):
 			n.append(taxon)
 			univ.columns = n
 			ofu_matched = ofu_matched.join(univ)
-		elif opt == 'majority':  # Same as above, but here just take the minimum set, or only OFUs shared by all strains
+		elif opt == 'majority':  # Same as above, but here just take the majority set, or only OFUs shared by at least half of the strains
 			avg = pd.DataFrame(t_odf.mean(axis=0))
 			dfbool = t_odf > 0
 			maj = pd.DataFrame(dfbool.mean(axis=0))
