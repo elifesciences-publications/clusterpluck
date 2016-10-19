@@ -25,10 +25,9 @@ def cluster_completeness(intype, cluster_map, inf2):
 	elif intype == 'h5':
 		mx = pd.read_hdf(inf2, 'table')
 	# list of all the clusters
-	# cluster_coverage = defaultdict(dict)
 	c_list = list(cluster_map.keys())
 	ct = len(c_list)
-	mat = np.zeros((ct, ct))
+	mat = np.zeros((ct, ct))  # initializes an array of the dimensions necessary to fit all cluster results
 	j = 0
 	for cluster in c_list:
 		# print(cluster)
@@ -48,7 +47,7 @@ def cluster_completeness(intype, cluster_map, inf2):
 			i_mx = mx_dubsub.shape[0]
 			j_mx = mx_dubsub.shape[1]
 			with warnings.catch_warnings():
-				warnings.simplefilter('ignore', category=RuntimeWarning)
+				warnings.simplefilter('ignore', category=RuntimeWarning)  # np doesn't like taking mean of empty slices
 				cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
 			if cc_mean > 0:
 				# calculates the fraction of orf coverage by the match
@@ -56,12 +55,12 @@ def cluster_completeness(intype, cluster_map, inf2):
 				# orf_rate = ((j_mx / j_orfs) + (i_mx / i_orfs)) / 2  # alternative metric
 			else:
 				orf_rate = cc_mean
-			# saves this ratio in a dictionary
+			# saves this ratio into the pre-existing array at the (cluster, cluster2) location
 			mat[i, j] = orf_rate
 			i += 1
 		j += 1
 	outdf = pd.DataFrame(mat, dtype=float)
-	outdf.columns = c_list
+	outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
 	outdf.index = c_list
 	outdf.sort_index(axis=0, inplace=True)
 	outdf.sort_index(axis=1, inplace=True)

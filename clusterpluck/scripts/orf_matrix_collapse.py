@@ -22,9 +22,9 @@ def make_arg_parser():
 
 def cluster_by_cluster(cluster_map, in_csv):
 	mx = pd.read_csv(in_csv, sep=',', header=0, index_col=0)
-	c_list = list(cluster_map.keys())
+	c_list = list(cluster_map.keys())  # list of all clusters
 	ct = len(c_list)
-	mat = np.zeros((ct, ct))
+	mat = np.zeros((ct, ct))  # initializes an array to fit results from all clusters
 	j = 0
 	for cluster in cluster_map:
 		# subsets the matrix by columns belonging to one cluster
@@ -33,16 +33,16 @@ def cluster_by_cluster(cluster_map, in_csv):
 		for cluster2 in cluster_map:
 			# subsets the smaller matrix by rows belonging to one cluster
 			mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
-			# finds the mean of the cells in the cluster x cluster matrix
+			# finds the mean of the cells in the cluster x cluster2 matrix
 			with warnings.catch_warnings():
-				warnings.simplefilter('ignore', category=RuntimeWarning)
+				warnings.simplefilter('ignore', category=RuntimeWarning)  # np doesn't like taking mean of empty slices
 				cc_mean = np.nanmean(mx_dubsub.values, dtype='float64')
-			# saves this average in a dictionary
+			# saves this ratio into the pre-existing array at the (cluster, cluster2) location
 			mat[i, j] = cc_mean
 			i += 1
 		j += 1
 	outdf = pd.DataFrame(mat, dtype=float)
-	outdf.columns = c_list
+	outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
 	outdf.index = c_list
 	outdf.sort_index(axis=0)
 	outdf.sort_index(axis=1)
@@ -67,6 +67,4 @@ def main():
 				outdf.to_csv(outf)
 
 if __name__ == '__main__':
-	with warnings.catch_warnings():
-		warnings.filterwarnings('ignore')
-		main()
+	main()
