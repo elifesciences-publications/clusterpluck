@@ -43,7 +43,7 @@ def cluster_completeness(intype, cluster_map, inf2):
 			i_orfs = len(cluster_map[cluster2])
 			# subsets the smaller matrix by rows belonging to one cluster
 			mx_dubsub = mx_csub.filter(like=cluster2, axis=0)
-			mx_dubsub.dropna(axis=(1, 0), how='all', inplace=True)
+			mx_dubsub = mx_dubsub.dropna(axis=(1, 0), how='all')
 			i_mx = mx_dubsub.shape[0]
 			j_mx = mx_dubsub.shape[1]
 			with warnings.catch_warnings():
