@@ -1,7 +1,6 @@
 #!/usr/bin/env Python
 
 import argparse
-import sys
 import pandas as pd
 
 
@@ -26,11 +25,10 @@ def match_tables(intax, inofu, opt):
 	taxons = list(tdf.index)
 	ofu_index = list(odf.columns)
 	ofu_matched = pd.DataFrame(index=ofu_index)
-	# TODO: Add summary functions for intersection (what do all strains have) and majority (what do at least half of strains have)
 	for taxon in taxons:
 		n = []
 		taxon = str(taxon)
-		if taxon.endswith('t__'):
+		if taxon.endswith('None') or taxon.endswith('t__'):
 			name = taxon.split(';')[-2]
 			name = name.replace('s__', '')
 		else:
@@ -55,11 +53,11 @@ def match_tables(intax, inofu, opt):
 			univ.columns = n
 			ofu_matched = ofu_matched.join(univ)
 		elif opt == 'majority':  # Same as above, but here just take the majority set, or only OFUs shared by at least half of the strains
-			avg = pd.DataFrame(t_odf.mean(axis=0))
+			avgm = pd.DataFrame(t_odf.mean(axis=0))
 			dfbool = t_odf > 0
 			maj = pd.DataFrame(dfbool.mean(axis=0))
 			maj = maj >= 0.5
-			maj = maj * avg
+			maj = maj * avgm
 			n.append(taxon)
 			maj.columns = n
 			ofu_matched = ofu_matched.join(maj)
