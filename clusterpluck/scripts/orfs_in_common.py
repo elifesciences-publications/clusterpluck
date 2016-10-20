@@ -59,6 +59,11 @@ def cluster_completeness(intype, cluster_map, inf2):
 			mat[i, j] = orf_rate
 			i += 1
 		j += 1
+		# DEBUG - will print the progress every 100 clusters (across the slower dimension) every 500th orf.
+		if j%500:
+			pass
+		else:
+			print(j)
 	outdf = pd.DataFrame(mat, dtype=float)
 	outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
 	outdf.index = c_list
