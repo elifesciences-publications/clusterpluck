@@ -22,6 +22,7 @@ def make_arg_parser():
 	parser.add_argument('-s', '--score', help='Which score to enter into matrix: "pident", "evalue", or "bitscore"', required=False, type=str, default='bitscore')
 	parser.add_argument('-t', '--threshold', help='The threshold (float) for entry into matrix.', required=False, type=float, default=1)
 	parser.add_argument('-o', '--output', help='Where to put the output (CSV or h5)', required=False, type=str, default='blastp_matrixform.csv')
+	parser.add_argument('-n', '--normalize', help='Normalize bitscore to score of self-self for each cluster (as 100).', action='store_true', required=False, default=False)
 	return parser
 
 
@@ -35,22 +36,22 @@ def main():
 		blast_tsv = csv.reader(blast_inf, delimiter='\t')
 	# line[0] query name, line[1] = reference name, line[2] = % match, line[10] = e-value, line[11] = bitscore
 		if args.score == 'bitscore':
+			self_match_dict = defaultdict(dict)
 			for line in blast_tsv:
-				# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
-				# m = p.search(line[0])
-				# n = p.search(line[1])
+				p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
+				m = p.search(line[0])
+				n = p.search(line[1])
 				# mref = m.group(1, 2)
 				# nref = n.group(1, 2)
-				# cname = ''.join(m.group(1, 2, 3))
-				# rname = ''.join(n.group(1, 2, 3))
+				cname = ''.join(m.group(1, 2, 3))
+				rname = ''.join(n.group(1, 2, 3))
 				# # print(mref)
-				# if mref == nref:
-				# 	pass
-				# else:
 				bvalue = np.float(line[11])
+				if cname == rname:
+					self_match_dict[line[0]] = bvalue
 				if bvalue > args.threshold:
 					sparse_blast_id_dict[line[0]][line[1]] = bvalue
-		# TODO: use the evalue or pident of perfect matches to normalize the data
+		# TODO: use the evalue of perfect matches to normalize the data
 		elif args.score == 'evalue':
 			for line in blast_tsv:
 				# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
@@ -85,6 +86,13 @@ def main():
 	df = pd.DataFrame.from_dict(sparse_blast_id_dict)
 	df.sort_index(axis=0, inplace=True)
 	df.sort_index(axis=1, inplace=True)
+	# print(df.shape[0])
+	if args.normalize:
+		vals = []
+		for cluster in list(df.columns):
+			vals.append(self_match_dict[cluster])
+		df = df / vals * 100
+		# print(len(vals))
 	# Check if a matrix is symmetric
 	# arr = df.values
 	# print((arr.transpose() == -arr).all())
