@@ -104,11 +104,11 @@ def main():
 						strain_label.append(refseq_id)
 					elif organism.endswith('None') or organism.endswith('t__'):
 						genus_species = organism.split(';')[-2]
-						genus_species = genus_species.strip('s__')
+						# genus_species = genus_species.strip('s__')
 						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
 					else:
 						strain = organism.split(';')[-1]
-						strain = strain.strip('t__')
+						# strain = strain.strip('t__')
 						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, strain))
 			df.index = strain_label
 		else:

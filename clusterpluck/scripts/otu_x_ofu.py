@@ -30,10 +30,10 @@ def match_tables(intax, inofu, opt):
 		taxon = str(taxon)
 		if taxon.endswith('None') or taxon.endswith('t__'):
 			name = taxon.split(';')[-2]
-			name = name.replace('s__', '')
+			# name = name.replace('s__', '')
 		else:
 			name = taxon.split(';')[-1]
-			name = name.replace('t__', '')
+			# name = name.replace('t__', '')
 		t_odf = odf.filter(like=name, axis=0)
 		if t_odf.empty:
 			pass
@@ -95,6 +95,7 @@ def main():
 			ofu_matched = match_tables(intax, inofu, opt)
 		with open(args.taxons, 'r') as intaxm:
 			ofu_table = multiply_tables(intaxm, ofu_matched)
+			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
 		with open('matching_ofu_profiles.csv', 'w') as profile_out:
 			ofu_matched.to_csv(profile_out)
 		with open(args.output, 'w') as outf:
