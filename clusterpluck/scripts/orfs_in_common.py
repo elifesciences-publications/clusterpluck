@@ -115,9 +115,11 @@ def big_cluster_completeness(grab, inkey, cluster, cluster_map, c_list, inf3, ma
 		# saves this ratio into the pre-existing array at the (cluster, cluster2) location
 		mat[i, j] = orf_rate
 		i += 1
-	# DEBUG - will print the progress every 100 clusters (across the slower dimension) every 500th orf.
-	if j % 10:
+	# DEBUG - will print the progress every 100 clusters (across the slower dimension).
+	if j % 100:
 		pass
+	elif j == 0:
+		print('Processed first cluster... moving on!')
 	else:
 		print('Processed %d clusters' % j)
 	del mx
@@ -144,6 +146,7 @@ def main():
 					inkey = generate_index_list(inf2)
 					c_list = list(cluster_map.keys())
 					ct = len(c_list)
+					print('Found %d clusters...' % ct)
 					mat = np.zeros((ct, ct))  # initializes an array of the dimensions necessary to fit all cluster results
 					j = 0
 					for cluster in c_list:
