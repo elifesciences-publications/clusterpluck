@@ -14,7 +14,7 @@ def make_arg_parser():
 												'[average] the OFU tallies,'
 												'[summarize] all the possible OFUs,'
 												'select only [universal] OFUs,'
-												'select only OFUs in a [majority] of strains', required=False, default='average')
+												'select only OFUs in a [majority] of strains', required=False, default='majority')
 	return parser
 
 
