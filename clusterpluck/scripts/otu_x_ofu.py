@@ -99,6 +99,7 @@ def main():
 		with open('matching_ofu_profiles.csv', 'w') as profile_out:
 			ofu_matched.to_csv(profile_out)
 		with open(args.output, 'w') as outf:
+			ofu_table = ofu_table.round(decimals=2)
 			ofu_table.to_csv(outf)
 
 
