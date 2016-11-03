@@ -38,6 +38,10 @@ pip install git+https://github.com/knights-lab/NINJA-DOJO.git --no-cache-dir --u
 If you want to run blastp on your own set of cluster amino acid files (.mpfa), you can get the blast+ Python package (including blastp) thusly:
 ```
 conda install blast
+
+# or
+
+conda install -c bioconda blast=2.5.0
 ```
 
 ______________

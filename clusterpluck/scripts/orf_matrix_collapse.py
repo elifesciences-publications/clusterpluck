@@ -86,7 +86,7 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	# Parse command line
-	with open(args.mpfa, 'r') if args.mpfa != '-' else sys.stdin as inf:
+	with open(args.mpfa, 'r') as inf:
 		# Generates dictionary with each unique 'refseq_cluster' as keys, ORFs as values
 		cluster_map = build_cluster_map(inf, bread=args.bread)
 	with open(args.input, 'r') as in_csv:
