@@ -5,9 +5,7 @@ import sys
 import pandas as pd
 import numpy as np
 import warnings
-import os
 from clusterpluck.scripts.cluster_dictionary import build_cluster_map
-from functools import partial
 from itertools import repeat
 from multiprocessing import Pool
 from multiprocessing import cpu_count
@@ -38,6 +36,7 @@ def pick_a_cluster(inkey, cluster):
 
 
 def parallel_minicluster(cluster2, args_list):
+	# parse the argument list
 	mx = args_list[0]
 	j_orfs = args_list[1]
 	cluster_map = args_list[2]
@@ -63,19 +62,19 @@ def parallel_minicluster(cluster2, args_list):
 
 
 def big_cluster_completeness(inf3, grab, inkey, cluster, cluster_map, cpus, c_list, j):
-	mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab, engine='c')
-	mx.index = inkey
+	mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
+	mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
 	# how many orfs in the full cluster
 	j_orfs = len(cluster_map[cluster])
-	args_list = [mx, j_orfs, cluster_map]
+	args_list = [mx, j_orfs, cluster_map]  # organizes all the arguments that the parallelized function needs into a list
 	with Pool(processes=cpus) as pool:
 		results = pool.starmap(parallel_minicluster, zip(c_list, repeat(args_list)))
 		pool.close()
 		pool.join()
-		bigmat = pd.concat(results, axis=0)
+		bigmat = pd.concat(results, axis=0)  # stack all the results into a single column in a dataframe
 		# print(bigmat.shape[0])
-		bigmat.index = c_list
-	# DEBUG - will print the progress every 100 clusters (across the slower dimension).
+		bigmat.index = c_list  # now the index is just the clusters, not the orfs
+	# DEBUG - will print the progress every 50 clusters (across columns--the slower dimension).
 	if j % 50:
 		pass
 	elif j == 0:
@@ -99,7 +98,7 @@ def main():
 	with open(args.mpfa, 'r') as inf:
 		# Generates dictionary with each unique 'refseq_cluster' as keys, ORFs as values
 		cluster_map = build_cluster_map(inf, bread=args.bread)
-		intype = str(args.input).split('.')[-1]
+		# intype = str(args.input).split('.')[-1]
 		with open(args.input, 'r') as inf2:
 			with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 				print('\nOk, processing input file in pieces...\n')
@@ -110,12 +109,12 @@ def main():
 				results_list = []
 				j = 0
 				for cluster in c_list:
-					grab = pick_a_cluster(inkey, cluster)
+					grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
 					# print(grab)
 					with open(args.input, 'r') as inf3:
 						bigmat = big_cluster_completeness(inf3, grab, inkey, cluster, cluster_map, cpus, c_list, j)
 					# print(bigmat)
-					results_list.append(bigmat)
+					results_list.append(bigmat)  # returns a list of dataframes, one for each cluster column
 					j += 1
 				print('File processing complete; writing output file...\n')
 				outdf = pd.concat(results_list, axis=1)
