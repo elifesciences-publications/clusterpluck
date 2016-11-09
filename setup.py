@@ -32,6 +32,7 @@ setup(
 		'blastp_to_matrix = clusterpluck.scripts.blastp_to_matrix:main',
 		'combine_metrics = clusterpluck.scripts.combine_metrics:main',
 		'parallel_in_common = clusterpluck.scripts.parallel_in_common:main',
+		'parallel_orf_collapse = clusterpluck.scripts.parallel_orf_collapse:main',
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
