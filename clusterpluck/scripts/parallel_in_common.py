@@ -19,6 +19,7 @@ def make_arg_parser():
 	parser.add_argument('-b', '--bread', help='Where to find the cluster information in the header for the sequence (default="ref|test,|")', default='ref|,|')
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
 	parser.add_argument('-c', '--cpus', help='How many processors to use (integer); default is 4', required=False, default=4, type=int)
+	# TODO: add option to use Tanimoto coefficient
 	return parser
 
 
@@ -34,7 +35,7 @@ def pick_a_cluster(inkey, cluster):
 	grab = [n for n in inkey if cluster in n]
 	return grab
 
-
+# TODO: define similar function that returns Tanimoto coefficient
 def parallel_minicluster(cluster2, args_list):
 	# parse the argument list
 	mx = args_list[0]

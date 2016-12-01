@@ -14,7 +14,7 @@ from scoop import futures
 
 # The arg parser
 def make_arg_parser():
-	parser = argparse.ArgumentParser(description='collapse the ORF x ORF matrix into a scored cluster x cluster matrix')
+	parser = argparse.ArgumentParser(description='Collapse ORF matrix into a scored cluster matrix. Run with "python -m scoop -vv -n 480 mpi_parallel_collapse [args]"')
 	parser.add_argument('-i', '--input', help='Input is the ORF matrix CSV file.', default='-')
 	parser.add_argument('-m', '--mpfa', help='The multi-protein fasta file (.mpfa) from which to build the dictionary')
 	parser.add_argument('-b', '--bread', help='Where to find the cluster information in the header for the sequence (default="ref|,|")', default='ref|,|')
@@ -23,9 +23,6 @@ def make_arg_parser():
 
 
 def parallel_clustermean(cluster2, mx):
-	# parse the argument list
-	# mx = args_list[0]
-	# cluster_map = args_list[2]
 	# subsets the smaller matrix by rows belonging to one cluster
 	mx_dubsub = mx.filter(like=cluster2, axis=0)
 	# finds the mean of the cells in the cluster x cluster2 matrix
