@@ -23,6 +23,13 @@ def make_arg_parser():
 	return parser
 
 
+def generate_chunk_list(in_csv2):
+	header = pd.read_csv(in_csv2, header=0, engine='c', index_col=0, nrows=0)
+	header = list(header.columns)
+	print('Extracted headers from input file...\n')
+	return header
+
+
 def parallel_clustermean(mx, c_list):
 	i = len(c_list)
 	mat = np.zeros((i, 1))
@@ -52,17 +59,26 @@ def main():
 	with open(args.input, 'r') as in_csv:
 		print('\nOk, processing input file in pieces...\n')
 		inkey = generate_index_list(in_csv)
+		# print(len(inkey))
+	with open(args.input, 'r') as in_csv2:
+		headers = generate_chunk_list(in_csv2)
+		# print(len(headers))
 		c_list = list(cluster_map.keys())
-		ct = len(c_list)
-		print('Found %d clusters...' % ct)
+		# ct = len(c_list)
+		# print('Found %d clusters...' % ct)
 		data_to_pool = []
+		grabbed_clusters = []
 	for cluster in c_list:
-		grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
-		# print(grab)
-		with open(args.input, 'r') as inf3:
-			mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
-		mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
-		data_to_pool.append(mx)  # create the list of dfs to map over for multiprocessing
+		grab = pick_a_cluster(headers, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
+		if not grab:
+			pass
+		else:
+			# print(grab)
+			grabbed_clusters.extend([cluster])
+			with open(args.input, 'r') as inf3:
+				mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
+			mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
+			data_to_pool.append(mx)  # create the list of dfs to map over for multiprocessing
 	if __name__ == '__main__':
 		print('\nSending data to Workers... work, Workers, work!')
 		results = list(futures.map(partial(parallel_clustermean, c_list=c_list), data_to_pool))
@@ -70,7 +86,7 @@ def main():
 		del data_to_pool
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 		outdf = pd.concat(results, axis=1)
-		outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
+		outdf.columns = grabbed_clusters  # names the columns (and index, next line) according to clusters in the order they were processed
 		# outdf.index = c_list
 		outdf.sort_index(axis=0, inplace=True)  # ensure that the clusters are in order on cols and rows
 		outdf.sort_index(axis=1, inplace=True)

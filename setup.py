@@ -33,7 +33,7 @@ setup(
 		'combine_metrics = clusterpluck.scripts.combine_metrics:main',
 		'parallel_in_common = clusterpluck.scripts.parallel_in_common:main',
 		'parallel_orf_collapse = clusterpluck.scripts.parallel_orf_collapse:main',
-		'mpi_collapse = clusterpluck.scripts.mpi_collapse:main',
+		'matrix_dicer = clusterpluck.tools.matrix_dicer:main',
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
