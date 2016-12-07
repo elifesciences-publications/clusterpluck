@@ -7,6 +7,9 @@ import pandas as pd
 from clusterpluck.scripts.cluster_dictionary import build_cluster_map
 from clusterpluck.scripts.orfs_in_common import generate_index_list
 from clusterpluck.scripts.orfs_in_common import pick_a_cluster
+from itertools import repeat
+from multiprocessing import Pool
+from multiprocessing import cpu_count
 
 
 # The arg parser
@@ -18,6 +21,7 @@ def make_arg_parser():
 	parser.add_argument('-o', '--output', help='Where to save the output csv', required=False, default='cluster_chunk')
 	parser.add_argument('-c', '--cutsize', help='Define the number of clusters per chunk', required=False, default=10)
 	parser.add_argument('-s', '--synthesize', help='Run with this flag to put Humpty Dumpty back together (all csv in cwd!)', required=False, action='store_true', default=False)
+	parser.add_argument('-p', '--cpus', help='Number of processors to use', required=False, default=4, type=int)
 	return parser
 
 
@@ -35,6 +39,19 @@ def synthesize_chunks():
 	return final_df
 
 
+def parallel_chunker(c, arglist):
+	infile = arglist[0]
+	inkey = arglist[1]
+	grab_chunk = []
+	for cluster in list(c):
+		grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
+		grab_chunk.extend(grab)
+	with open(infile, 'r') as inf3:
+		mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab_chunk, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
+		mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
+	return mx
+
+
 def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
@@ -45,6 +62,12 @@ def main():
 			final_df.to_csv(outf)
 			print('\nMerged data written to file... exiting...\n')
 			sys.exit()
+	cpus = args.cpus
+	num_cpus = cpu_count()
+	if cpus > num_cpus:
+		print('\nError: Number of requested processors exceeds hardware available!')
+		print('Maximum processors available is %s.\n' % num_cpus)
+		sys.exit()
 	with open(args.mpfa, 'r') as inf:
 		# Generates dictionary with each unique 'refseq_cluster' as keys, ORFs as values
 		cluster_map = build_cluster_map(inf, bread=args.bread)
@@ -58,26 +81,24 @@ def main():
 	# Make a list of lists of clusters, to guide the breaking up of the csv
 	bcl = [c_list[i:i + n] for i in range(0, len(c_list), n)]
 	print('\nMaster list generated... now doing the splits!')
+	inf3 = args.input
+	# with open(args.input, 'r') as inf3:
+	arglist = [inf3, inkey]
+	with Pool(processes=cpus) as pool:
+		results = pool.starmap(parallel_chunker, zip(bcl, repeat(arglist)))
+		pool.close()
+		pool.join()
 	p = 1
-	for c in bcl:
-		grab_chunk = []
-		for cluster in list(c):
-			grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
-			grab_chunk.extend(grab)
-		with open(args.input, 'r') as inf3:
-			mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab_chunk, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
-		mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
-		# data_to_pool.append(mx)  # create the list of dfs to map over for multiprocessing
+	for df_chunk in results:
 		outf = args.output
 		if outf.endswith('.csv'):
 			outf.replace('.csv', '')
-		outf = '_'.join([args.output, str(p), '.csv'])
-		mx.to_csv(outf)
+		outf = '_'.join([outf, str(p), '.csv'])
+		df_chunk.to_csv(outf)
 		print('\nSaved a matrix chunk...')
 		p += 1
-		# outdf.sort_index(axis=0, inplace=True)  # ensure that the clusters are in order on cols and rows
-		# outdf.sort_index(axis=1, inplace=True)
-
+	# outdf.sort_index(axis=0, inplace=True)  # ensure that the clusters are in order on cols and rows
+	# outdf.sort_index(axis=1, inplace=True)
 
 if __name__ == '__main__':
 	main()
