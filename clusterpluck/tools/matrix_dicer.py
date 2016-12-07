@@ -16,7 +16,7 @@ def make_arg_parser():
 	parser.add_argument('-m', '--mpfa', help='The multi-protein fasta file (.mpfa) from which to build the dictionary')
 	parser.add_argument('-b', '--bread', help='Where to find the cluster information in the header for the sequence (default="ref|,|")', default='ref|,|')
 	parser.add_argument('-o', '--output', help='Where to save the output csv', required=False, default='cluster_chunk')
-	parser.add_argument('-c', '--cuts', help='How many pieces the matrix should be split into', required=False, default=10)
+	parser.add_argument('-c', '--cutsize', help='Define the number of clusters per chunk', required=False, default=10)
 	parser.add_argument('-s', '--synthesize', help='Run with this flag to put Humpty Dumpty back together (all csv in cwd!)', required=False, action='store_true', default=False)
 	return parser
 
@@ -38,26 +38,24 @@ def synthesize_chunks():
 def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
+	# Parse command line
 	if args.synthesize:
 		final_df = synthesize_chunks()
 		with open(args.output, 'w') as outf:
 			final_df.to_csv(outf)
 			print('\nMerged data written to file... exiting...\n')
 			sys.exit()
-	# Parse command line
 	with open(args.mpfa, 'r') as inf:
 		# Generates dictionary with each unique 'refseq_cluster' as keys, ORFs as values
 		cluster_map = build_cluster_map(inf, bread=args.bread)
 	with open(args.input, 'r') as in_csv:
-		print('\nOk, processing input file in pieces...\n')
+		print('\nOk, processing input file...\n')
 		inkey = generate_index_list(in_csv)
 	c_list = list(cluster_map.keys())
 	ct = len(c_list)
-	n = int(args.cuts)
-	print('Found %d clusters... Making %d cuts...' % (ct, n))
-	# g = orfct / cuts
-	# if not g.is_integer():
-	# 	g = int(g) + 1
+	n = int(args.cutsize)
+	print('Found %d clusters... Making groups of %d clusters...' % (ct, n))
+	# Make a list of lists of clusters, to guide the breaking up of the csv
 	bcl = [c_list[i:i + n] for i in range(0, len(c_list), n)]
 	print('\nMaster list generated... now doing the splits!')
 	p = 1
@@ -77,11 +75,6 @@ def main():
 		mx.to_csv(outf)
 		print('\nSaved a matrix chunk...')
 		p += 1
-		# if __name__ == '__main__':
-			# print('\nSending data to Workers... work, Workers, work!')
-			# results = list(futures.map(partial(parallel_clustermean, c_list=c_list), data_to_pool))
-			# print('\nFile processing complete; writing output file...\n')
-			# del data_to_pool
 		# outdf.sort_index(axis=0, inplace=True)  # ensure that the clusters are in order on cols and rows
 		# outdf.sort_index(axis=1, inplace=True)
 
