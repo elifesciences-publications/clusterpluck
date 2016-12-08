@@ -34,6 +34,7 @@ setup(
 		'parallel_in_common = clusterpluck.scripts.parallel_in_common:main',
 		'parallel_orf_collapse = clusterpluck.scripts.parallel_orf_collapse:main',
 		'matrix_dicer = clusterpluck.tools.matrix_dicer:main',
+		'matrix_serial_dicer = clusterpluck.tools.matrix_serial_dicer:main',
 		'orfs_in_common = clusterpluck.scripts.orfs_in_common:main',
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
