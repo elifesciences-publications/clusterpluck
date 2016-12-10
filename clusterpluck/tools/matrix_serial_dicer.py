@@ -7,9 +7,6 @@ import pandas as pd
 from clusterpluck.scripts.cluster_dictionary import build_cluster_map
 from clusterpluck.scripts.orfs_in_common import generate_index_list
 from clusterpluck.scripts.orfs_in_common import pick_a_cluster
-from itertools import repeat
-from multiprocessing import Pool
-from multiprocessing import cpu_count
 
 
 # The arg parser
@@ -21,7 +18,6 @@ def make_arg_parser():
 	parser.add_argument('-o', '--output', help='Where to save the output csv', required=False, default='cluster_chunk')
 	parser.add_argument('-c', '--cutsize', help='Define the number of clusters per chunk', required=False, default=10)
 	parser.add_argument('-s', '--synthesize', help='Run with this flag to put Humpty Dumpty back together (all csv in cwd!)', required=False, action='store_true', default=False)
-	parser.add_argument('-p', '--cpus', help='Number of processors to use', required=False, default=4, type=int)
 	return parser
 
 
@@ -37,19 +33,6 @@ def synthesize_chunks():
 	final_df = pd.concat(data_list, axis=1)
 	final_df.sort_index(axis=1, inplace=True)
 	return final_df
-#
-#
-# def parallel_chunker(c, arglist):
-# 	infile = arglist[0]
-# 	inkey = arglist[1]
-# 	grab_chunk = []
-# 	for cluster in list(c):
-# 		grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
-# 		grab_chunk.extend(grab)
-# 	with open(infile, 'r') as inf3:
-# 		mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab_chunk, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
-# 		mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
-# 	return mx
 
 
 def main():
@@ -84,16 +67,13 @@ def main():
 			grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
 			grab_chunk.extend(grab)
 		chunk_df = big_df[grab_chunk]
-		# with open(args.input, 'r') as inf3:
-		# 	mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab_chunk, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
-		# mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
-		# data_to_pool.append(mx)  # create the list of dfs to map over for multiprocessing
 		outf = args.output
 		if outf.endswith('.csv'):
 			outf.replace('.csv', '')
 		outf = '_'.join([outf, str(p), '.csv'])
 		chunk_df.to_csv(outf)
 		print('\nSaved matrix chunk %d...' % p)
+		del chunk_df
 		p += 1
 	# outdf.sort_index(axis=0, inplace=True)  # ensure that the clusters are in order on cols and rows
 	# outdf.sort_index(axis=1, inplace=True)
