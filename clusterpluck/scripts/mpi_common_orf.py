@@ -144,7 +144,7 @@ def main():
 				bigmat = big_cluster_completeness(inf3, grab, inkey, cluster, cluster_map, tanimoto, c_list, j)
 				# print(bigmat)
 				results_list.append(bigmat)  # returns a list of dataframes, one for each cluster column
-		j += 1
+			j += 1
 	print('File processing complete; writing output file...\n')
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 		outdf = pd.concat(results_list, axis=1)
