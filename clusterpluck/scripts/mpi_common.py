@@ -143,9 +143,9 @@ def main():
 		# print(bigmat.shape[0])
 		# bigmat.index = c_list  # now the index is just the clusters, not the orfs
 		# print(bigmat)
-		del data_to_pool
 	print('File processing complete; writing output file...\n')
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
+		del data_to_pool
 		outdf = pd.concat(results, axis=1)
 		outdf.columns = grabbed_clusters  # names the columns (and index, next line) according to clusters in the order they were processed
 		outdf.index = c_list
