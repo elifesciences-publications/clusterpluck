@@ -130,8 +130,8 @@ def main():
 				mx = pd.read_csv(inf3, sep=',', header=0, usecols=grab, engine='c')  # loads in only the columns from the grab list, i.e. all cols for a unique cluster
 			mx.index = inkey  # reindexes the df with the orf labels after importing specific columns with usecols
 			data_to_pool.append(mx)
-	# print(grabbed_clusters)
-	# print(len(data_to_pool))
+	dlen = len(data_to_pool)
+	print('Built the data list of %s clusters' % dlen)
 	args_list = [cluster_map, c_list]  # organizes all the arguments that the parallelized function needs into a list
 	print('\nSending data to Workers... work, Workers, work!\n')
 	if args.tanimoto:

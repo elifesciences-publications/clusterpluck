@@ -23,6 +23,13 @@ def make_arg_parser():
 	return parser
 
 
+def generate_chunk_list(in_csv2):
+	header = pd.read_csv(in_csv2, header=0, engine='c', index_col=0, nrows=0)
+	header = list(header.columns)
+	print('Extracted headers from input file...\n')
+	return header
+
+
 def generate_index_list(inf2):
 	rowdf = pd.read_csv(inf2, header=0, engine='c', usecols=[0])
 	inkey = rowdf.iloc[0:, 0].tolist()
@@ -131,25 +138,30 @@ def main():
 		cluster_map = build_cluster_map(inf, bread=args.bread)
 		# intype = str(args.input).split('.')[-1]
 	with open(args.input, 'r') as inf2:
-		print('\nOk, processing input file in pieces...\n')
 		inkey = generate_index_list(inf2)
+	with open(args.input, 'r') as in_csv2:
+		headers = generate_chunk_list(in_csv2)
 	c_list = list(cluster_map.keys())
 	ct = len(c_list)
 	print('Found %d clusters...' % ct)
 	results_list = []
+	grabbed_clusters = []
 	j = 0
 	for cluster in c_list:
-		grab = pick_a_cluster(inkey, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
+		grab = pick_a_cluster(headers, cluster)  # uses the name of the cluster to get a list of all orfs for a particular unique cluster
 		# print(grab)
-		with open(args.input, 'r') as inf3:
-			bigmat = big_cluster_completeness(inf3, grab, inkey, cluster, cluster_map, cpus, tanimoto, c_list, j)
-		# print(bigmat)
-		results_list.append(bigmat)  # returns a list of dataframes, one for each cluster column
+		if not grab:
+			pass
+		else:
+			grabbed_clusters.extend([cluster])
+			with open(args.input, 'r') as inf3:
+				bigmat = big_cluster_completeness(inf3, grab, inkey, cluster, cluster_map, cpus, tanimoto, c_list, j)
+			results_list.append(bigmat)  # returns a list of dataframes, one for each cluster column
 		j += 1
 	print('File processing complete; writing output file...\n')
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 		outdf = pd.concat(results_list, axis=1)
-		outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
+		outdf.columns = grabbed_clusters  # names the columns (and index, next line) according to clusters in the order they were processed
 		outdf.index = c_list
 		outdf.sort_index(axis=0, inplace=True)
 		outdf.sort_index(axis=1, inplace=True)
