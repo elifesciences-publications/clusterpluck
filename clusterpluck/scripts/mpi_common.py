@@ -133,20 +133,23 @@ def main():
 	# print(grabbed_clusters)
 	# print(len(data_to_pool))
 	args_list = [cluster_map, c_list]  # organizes all the arguments that the parallelized function needs into a list
-	if __name__ == '__main__':
-		print('\nSending data to Workers... work, Workers, work!\n')
-		if tanimoto:
+	print('\nSending data to Workers... work, Workers, work!\n')
+	if args.tanimoto:
+		if __name__ == '__main__':
 			results = list(futures.map(partial(parallel_tanimoto, args_list=args_list), data_to_pool))
-		else:
+			outdf = pd.concat(results, axis=1)
+	if not args.tanimoto:
+		if __name__ == '__main__':
 			results = list(futures.map(partial(parallel_minicluster, args_list=args_list), data_to_pool))
+			outdf = pd.concat(results, axis=1)
 		# bigmat = pd.concat(results, axis=0)  # stack all the results into a single column in a dataframe
 		# print(bigmat.shape[0])
 		# bigmat.index = c_list  # now the index is just the clusters, not the orfs
 		# print(bigmat)
 	print('File processing complete; writing output file...\n')
+	del data_to_pool
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-		# del data_to_pool
-		outdf = pd.concat(results, axis=1)
+		# outdf = pd.concat(results, axis=1)
 		outdf.columns = grabbed_clusters  # names the columns (and index, next line) according to clusters in the order they were processed
 		outdf.index = c_list
 		outdf.sort_index(axis=0, inplace=True)
