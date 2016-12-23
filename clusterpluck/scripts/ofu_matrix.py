@@ -41,7 +41,7 @@ def cluster_ofus(inf2, dd):
 		name = line[0]
 		refseq_id = '_'.join(name.split('_')[0:2])
 		ofu = int(line[1])
-		ofu_name = ('ofu', str('%03d' % ofu))
+		ofu_name = ('ofu', str('%05d' % ofu))
 		ofu_names.append('_'.join(ofu_name))
 		dd[refseq_id][ofu] += 1  # adds a "1" to the dictionary value for that clustered OFU for this organism
 	df = pd.DataFrame.from_dict(dd)
@@ -60,10 +60,11 @@ def main():
 	args = parser.parse_args()
 
 	# Parse command line
+	height = 1 - (args.height / 100)
 	with open(args.input, 'r') as inf:
 		if args.clusterme:
 			print('...performing hierarchical clustering, tree cut at height of %s...\n' % args.height)
-			hclus = process_hierarchy(inf, h=args.height)
+			hclus = process_hierarchy(inf, h=height)
 		else:
 			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
 		size = hclus.max(0)[0]  # get the total number of clustered OFUs (depends on height cut)
