@@ -10,11 +10,14 @@ def make_arg_parser():
 	parser.add_argument('-t', '--taxons', help='The taxon table in CSV', required=True)
 	parser.add_argument('-f', '--ofus', help='The OFU profile at a particular cut height, in CSV', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to "ofu_table.csv" in current working directory', required=False, default='ofu_table.csv')
-	parser.add_argument('-m', '--multiples', help='When multiple strains for species: '
+	parser.add_argument('-m', '--multiples', help='When multiple strains for species-level match: '
 												'[average] the OFU tallies,'
 												'[summarize] all the possible OFUs,'
 												'select only [universal] OFUs,'
 												'select only OFUs in a [majority] of strains', required=False, default='majority')
+	parser.add_argument('-p', '--profiles',
+						help='Where to save the matching OFU profiles csv; default to "matching_profiles.csv" in current working directory',
+						required=False, default='matching_profiles.csv')
 	return parser
 
 
@@ -76,6 +79,15 @@ def match_tables(intax, inofu, opt):
 def multiply_tables(intaxm, ofu_matched):
 	tdf = pd.read_csv(intaxm, header=0, index_col=0)
 	tdf = tdf.fillna(0)
+	ofu_list = list(ofu_matched.index)
+	if not tdf.shape[0] == ofu_matched.shape[0]:
+		print('\nFYI, some taxa did not end up in the ofu profile...')
+		print('taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
+		print('ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1])
+		print('\nUsing OFU index to limit to common taxa...\n')
+		tdf = tdf.loc[ofu_list]
+	print('Final taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
+	print('Final ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1], '\n')
 	ofu_table = tdf.T.dot(ofu_matched)  # taking the dot product in this direction gives the relative abundance of OFUs based on observations of the taxon
 	if ofu_table.empty:
 		print('\nError multiplying matrices. Check dimensions.\n')
@@ -93,11 +105,11 @@ def main():
 		with open(args.ofus, 'r') as inofu:
 			opt = args.multiples
 			ofu_matched = match_tables(intax, inofu, opt)
+		with open(args.profiles, 'w') as profile_out:
+			ofu_matched.to_csv(profile_out)
 		with open(args.taxons, 'r') as intaxm:
 			ofu_table = multiply_tables(intaxm, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
-		with open('matching_ofu_profiles.csv', 'w') as profile_out:
-			ofu_matched.to_csv(profile_out)
 		with open(args.output, 'w') as outf:
 			ofu_table = ofu_table.round(decimals=2)
 			ofu_table.to_csv(outf)
