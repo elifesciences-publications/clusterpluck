@@ -15,6 +15,9 @@ def make_arg_parser():
 												'[summarize] all the possible OFUs,'
 												'select only [universal] OFUs,'
 												'select only OFUs in a [majority] of strains', required=False, default='majority')
+	parser.add_argument('-q', '--no_profiles',
+						help='Do not save the intermediate matching profiles document', action='store_true',
+						required=False, default='False')
 	parser.add_argument('-p', '--profiles',
 						help='Where to save the matching OFU profiles csv; default to "matching_profiles.csv" in current working directory',
 						required=False, default='matching_profiles.csv')
@@ -105,8 +108,9 @@ def main():
 		with open(args.ofus, 'r') as inofu:
 			opt = args.multiples
 			ofu_matched = match_tables(intax, inofu, opt)
-		with open(args.profiles, 'w') as profile_out:
-			ofu_matched.to_csv(profile_out)
+		if args.no_profiles:
+			with open(args.profiles, 'w') as profile_out:
+				ofu_matched.to_csv(profile_out)
 		with open(args.taxons, 'r') as intaxm:
 			ofu_table = multiply_tables(intaxm, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
