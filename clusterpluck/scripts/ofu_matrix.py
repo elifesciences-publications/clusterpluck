@@ -23,7 +23,7 @@ def make_arg_parser():
 	parser.add_argument('-x', '--taxonomy', help='Annotate the OFU table with full taxonomy (all ranks)', action='store_true', default=False)
 	parser.add_argument('-n', '--ncbitid', help='Annotate the OFU table with just ncbi tid, for aligning with bowtie2 shogun output', action='store_true', default=False)
 	parser.add_argument('-c', '--clusterme', help='If a percent identity scores matrix is provided, this will also perform hierarchical clustering', action='store_true', required=False, default=False)
-	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree', required=False, default=0.3, type=float)
+	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree', required=False, default=70, type=float)
 	return parser
 
 

@@ -44,7 +44,7 @@ def bgcs_in_ofu(ofus, hclus):
 		if ofu.startswith('ofu'):
 			ofu_n = str(ofu.replace('ofu', ''))
 		bgcs = dd[ofu_n]
-		print('\nThis cluster, %s, contains the following BGCs:' % ofu)
+		print('\nThis ofu cluster, %s, contains the following BGCs:' % ofu)
 		print(bgcs, '\n')
 	return None
 

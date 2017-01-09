@@ -40,5 +40,6 @@ setup(
 		'compile_mpfa = clusterpluck.tools.compile_mpfa:main',
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
 		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main',
+		'cluster_lookup = clusterpluck.tools.cluster_lookup:main',
 	]),
 )
