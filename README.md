@@ -28,7 +28,7 @@ If you do not have pandas installed, install (or update) pandas :panda_face:
 ```
 conda install pandas
 ```
-In order to fully annotate the genomes, clusterpluck uses the NINJA-DOJO database package. If you want annotation of OFUs beyond just NCBI accession numbers (e.g. NC_000913.3), install DOJO in the clusterpluck environment.
+In order to fully annotate the genomes, clusterpluck uses the NINJA-DOJO database package. If you want annotation of OFUs beyond just NCBI accession numbers (e.g. NC_000913.3), install DOJO in the clusterpluck environment (recommended).
 
 ```
 # NINJA-DOJO

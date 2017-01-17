@@ -20,14 +20,15 @@ from contextlib import contextmanager
 
 # The arg parser
 def make_arg_parser():
-	parser = argparse.ArgumentParser(description='Build a dictionary to store the list of ORFs for clusters in each genome')
+	parser = argparse.ArgumentParser(description='Look up relevant information for given OFU(s), such as DNA and AA sequences, and organism names')
 	parser.add_argument('-s', '--scores', help="The appropriate scores matrix resource for this data (csv)", default='-')
 	parser.add_argument('-t', '--height', help='The similarity/identity at which the OFUs were picked (0-100)', required=True, type=float)
 	parser.add_argument('-m', '--mpfa', help='The .mpfa resource for this ClusterPluck database', required=False)
 	parser.add_argument('-d', '--dna_fasta', help='The multi-fasta resource containing cluster DNA sequences for this ClusterPluck database', required=False)
 	parser.add_argument('-b', '--bread', help='Where to find the header for the sequence (default="ref|,|")', default='ref|,|')
 	parser.add_argument('-o', '--output', help='Directory in which to save the cluster information files (default = cwd)', required=False, default='.')
-	parser.add_argument('-c', '--ofu', help='Comma-separated list of the ofus (e.g. ofu00001,ofu00003) to reveal', required=False, type=str)
+	parser.add_argument('-c', '--ofu', help='Comma-separated list of the ofus (e.g. ofu00001,ofu00003) on which to provide information', required=False, type=str)
+	parser.add_argument('-y', '--types', help='A CSV file containing the predicted product types for each cluster', required=False)
 	return parser
 
 
@@ -42,7 +43,7 @@ def suppress_stdout():
 			sys.stdout = old_stdout
 
 
-def list_organisms(ofus, hclus, outpath):
+def list_organisms(ofus, hclus, typetable, outpath):
 	bgc_dd = defaultdict(list)
 	for value, key in hclus.itertuples(index=True):
 		key = str('%05d' % key)
@@ -64,15 +65,18 @@ def list_organisms(ofus, hclus, outpath):
 			for bgc in bgcs:
 				refseqid = '_'.join(bgc.split('_')[:2])
 				name = refseq_to_name(refseqid, db=db, nt=nt)
+				if typetable is not False:
+					ctype = typetable.filter(like=bgc, axis=0)
+					ctype = str(ctype.iloc[0,0])
 				if bgc == name:
-					name_dict[bgc] = refseqid
+					name_dict[bgc] = [ctype, refseqid]
 				else:
-					name_dict[bgc] = name
+					name_dict[bgc] = [ctype, name]
 		ofu_file = ''.join(['ofu', ofu_n, '.txt'])
 		with open(os.path.join(outpath, ofu_file), 'w') as outf:
 			outdf = pd.DataFrame.from_dict(name_dict, orient='index')
-			# outdf.columns = ['organism']
-			outdf.to_csv(outf, sep='\t', header=False)
+			outdf.columns = ['predicted_type', 'organism']
+			outdf.to_csv(outf, sep='\t')
 		i += 1
 	print('\nOrganism information for %d OFUs written to file.\n' % i)
 	return bgc_dd
@@ -85,7 +89,7 @@ def compile_ofu_sequences(inf_m, bgc, aa_outf):
 		if '.cluster' in header:
 			header = header.replace('.cluster', '_cluster')
 		if bgc in header:
-			aa_outf.write(''.join([header, '\n']))
+			aa_outf.write(''.join(['>', header, '\n']))
 			aa_outf.write(''.join([sequence, '\n']))
 	return aa_outf
 
@@ -97,7 +101,7 @@ def compile_ofu_dnasequences(inf_d, bgc, dna_outf):
 		if '.cluster' in header:
 			header = header.replace('.cluster', '_cluster')
 		if bgc in header:
-			dna_outf.write(''.join([header, '\n']))
+			dna_outf.write(''.join(['>', header, '\n']))
 			dna_outf.write(''.join([sequence, '\n']))
 	return dna_outf
 
@@ -110,7 +114,12 @@ def main():
 		h = 1 - (args.height / 100)
 		hclus = process_hierarchy(inf, h)
 	ofus = args.ofu
-	bgc_dd = list_organisms(ofus, hclus, outpath)
+	if args.types:
+		with open(args.types, 'r') as in_t:
+			typetable = pd.read_csv(in_t, header=0, index_col=0)
+	else:
+		typetable = False
+	bgc_dd = list_organisms(ofus, hclus, typetable, outpath)
 	if args.dna_fasta or args.mpfa:
 		ofu_list = ofus.split(',')
 		i = 0
