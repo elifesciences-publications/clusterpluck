@@ -7,15 +7,12 @@ import pandas as pd
 from collections import defaultdict
 from clusterpluck.tools.annotations import refseq_to_name
 from clusterpluck.tools.h_clustering import process_hierarchy
+from clusterpluck.scripts.run_blastp import run_blastp
+from clusterpluck.tools.suppress_print import suppress_stdout
 from ninja_dojo.database import RefSeqDatabase
 from ninja_dojo.taxonomy import NCBITree
 from ninja_utils.parsers import FASTA
-from contextlib import contextmanager
-
-# Take a list of strain_clusters (in the format "NC_004307.2_cluster004") and search the .mpfa database file
-# to return a protein fasta (.mpfa) file containing the sequences of the clusters requested.
-#
-# >ncbi_tid|206672|ref|NC_004307.2_cluster004_ctg1_orf02030|organism|Bifidobacterium_longum|
+from multiprocessing import cpu_count
 
 
 # The arg parser
@@ -24,23 +21,14 @@ def make_arg_parser():
 	parser.add_argument('-s', '--scores', help="The appropriate scores matrix resource for this data (csv)", default='-')
 	parser.add_argument('-t', '--height', help='The similarity/identity at which the OFUs were picked (0-100)', required=True, type=float)
 	parser.add_argument('-m', '--mpfa', help='The .mpfa resource for this ClusterPluck database', required=False)
+	parser.add_argument('--mibig', help='To search OFU sequences against the MIBiG database, provide path to the MIBiG blastp database files (including database name, no extension)', required=False)
 	parser.add_argument('-d', '--dna_fasta', help='The multi-fasta resource containing cluster DNA sequences for this ClusterPluck database', required=False)
 	parser.add_argument('-b', '--bread', help='Where to find the header for the sequence (default="ref|,|")', default='ref|,|')
 	parser.add_argument('-o', '--output', help='Directory in which to save the cluster information files (default = cwd)', required=False, default='.')
 	parser.add_argument('-c', '--ofu', help='Comma-separated list of the ofus (e.g. ofu00001,ofu00003) on which to provide information', required=False, type=str)
+	parser.add_argument('-n', '--name', help='Comma-separated list of the RefSeq IDs (with or without cluster number) for which to provide a list of OFUs', required=False, type=str)
 	parser.add_argument('-y', '--types', help='A CSV file containing the predicted product types for each cluster', required=False)
 	return parser
-
-
-@contextmanager
-def suppress_stdout():
-	with open(os.devnull, 'w') as devnull:
-		old_stdout = sys.stdout
-		sys.stdout = devnull
-		try:
-			yield
-		finally:
-			sys.stdout = old_stdout
 
 
 def list_organisms(ofus, hclus, typetable, outpath):
@@ -67,7 +55,9 @@ def list_organisms(ofus, hclus, typetable, outpath):
 				name = refseq_to_name(refseqid, db=db, nt=nt)
 				if typetable is not False:
 					ctype = typetable.filter(like=bgc, axis=0)
-					ctype = str(ctype.iloc[0,0])
+					ctype = str(ctype.iloc[0, 0])
+				else:
+					ctype = 'NA'
 				if bgc == name:
 					name_dict[bgc] = [ctype, refseqid]
 				else:
@@ -106,6 +96,54 @@ def compile_ofu_dnasequences(inf_d, bgc, dna_outf):
 	return dna_outf
 
 
+def identify_organism(org, db, nt):
+	# with suppress_stdout():
+	if 'cluster' in org:
+		if '.cluster' in org:
+			org.replace('.cluster', '_cluster')
+		refseqid = '_'.join(org.split('_')[:2])
+	else:
+		refseqid = org
+	name = refseq_to_name(refseqid, db=db, nt=nt)
+	return name
+
+
+def list_organism_ofus(orgs, hclus, height, outpath):
+	bgc_dd = defaultdict(list)
+	for value, key in hclus.itertuples(index=True):
+		key = str('%05d' % key)
+		key = ''.join(['ofu', key])
+		bgc_dd[key].extend(list([value]))
+	orgs_list = orgs.split(',')
+	i = len(orgs_list)
+	ofu_dict = defaultdict(list)
+	# Preload the Database and Tree
+	db = RefSeqDatabase()
+	nt = NCBITree()
+	for org in orgs_list:
+		print(org)
+		org_ofu_dup = []
+		for ofu_num, ofu_orgs in bgc_dd.items():
+			for ofu_org in ofu_orgs:
+				if org in ofu_org:
+					name = identify_organism(org, db=db, nt=nt)
+					if ofu_num not in org_ofu_dup:
+						org_ofu_dup.append(ofu_num)
+						ofu_dict[name].extend([ofu_num])
+					else:
+						pass
+	height = str(int(height))
+	ofu_file = ''.join(['OFUs_from_refseq_id', height, '.txt'])
+	outdf = pd.DataFrame.from_dict(ofu_dict, orient='index')
+	if not outdf.empty:
+		with open(os.path.join(outpath, ofu_file), 'w') as outf:
+			outdf.to_csv(outf, sep='\t', header=False)
+		print('\nOFU assigments written to file for the %d organism ID entries given.\n' % i)
+	else:
+		print('\nNo OFU assignments found; check RefSeq ID and format')
+	return None
+
+
 def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
@@ -113,40 +151,64 @@ def main():
 	with open(args.scores, 'r') as inf:
 		h = 1 - (args.height / 100)
 		hclus = process_hierarchy(inf, h)
-	ofus = args.ofu
 	if args.types:
 		with open(args.types, 'r') as in_t:
 			typetable = pd.read_csv(in_t, header=0, index_col=0)
 	else:
 		typetable = False
-	bgc_dd = list_organisms(ofus, hclus, typetable, outpath)
-	if args.dna_fasta or args.mpfa:
-		ofu_list = ofus.split(',')
-		i = 0
-		for ofu in ofu_list:
-			i += 1
-			if ofu.startswith('ofu'):
-				ofu_n = str(ofu.replace('ofu', ''))
-			else:
-				ofu_n = ofu
-			bgcs = bgc_dd[ofu_n]
-			if args.mpfa:
-				ofu_aaseqfile = ''.join(['ofu', ofu_n, '_aasequences.txt'])
-				aa_outf = open(os.path.join(outpath, ofu_aaseqfile), 'w')
-				for bgc in bgcs:
-					with open(args.mpfa, 'r') as inf_m:
-						aa_outf = compile_ofu_sequences(inf_m, bgc, aa_outf)
-				aa_outf.close()
-			if args.dna_fasta:
-				ofu_dnaseqfile = ''.join(['ofu', ofu_n, '_dnasequences.txt'])
-				dna_outf = open(os.path.join(outpath, ofu_dnaseqfile), 'w')
-				for bgc in bgcs:
-					with open(args.dna_fasta, 'r') as inf_d:
-						dna_outf = compile_ofu_dnasequences(inf_d, bgc, dna_outf)
-				dna_outf.close()
-		print('Sequence files written for %d OFUs.\n' % i)
-	else:
-		pass
+	if args.ofu:
+		ofus = args.ofu
+		bgc_dd = list_organisms(ofus, hclus, typetable, outpath)
+		if args.dna_fasta or args.mpfa:  # only generate OFU sequence files if the appropriate files are provided
+			ofu_list = ofus.split(',')
+			i = 0
+			for ofu in ofu_list:
+				i += 1
+				if ofu.startswith('ofu'):
+					ofu_n = str(ofu.replace('ofu', ''))
+				else:
+					ofu_n = ofu
+				bgcs = bgc_dd[ofu_n]
+				if args.mpfa:
+					ofu_aaseqfile = ''.join(['ofu', ofu_n, '_aasequences.mpfa'])
+					aa_outf = open(os.path.join(outpath, ofu_aaseqfile), 'w')
+					for bgc in bgcs:
+						with open(args.mpfa, 'r') as inf_m:
+							aa_outf = compile_ofu_sequences(inf_m, bgc, aa_outf)
+					aa_outf.close()
+					if args.mibig:
+						mibigout = ''.join(['ofu', ofu_n, '_vs_MiBiG.txt'])
+						mibigout = os.path.join(outpath, mibigout)
+						# print(mibigout)
+						blastout = open(mibigout, 'w')
+						cpus = int(cpu_count() / 2)
+						print('Blasting OFU%s against database using %s cpus\n' % (ofu_n, cpus))
+						mibig_db = str(os.path.relpath(args.mibig))
+						if ' ' in mibig_db:
+							mibig_db = mibig_db.replace(' ', '\ ')
+						# print(mibig_db)
+						ofu_query = str(os.path.join(outpath, ofu_aaseqfile))
+						if ' ' in ofu_query:
+							ofu_query = ofu_query.replace(' ', '\ ')
+						# print(ofu_query)
+						blastresult = run_blastp(ofu_query, mibigout, mibig_db, cpus)
+						blastout.write(blastresult)
+						blastout.close()
+				if args.dna_fasta:
+					ofu_dnaseqfile = ''.join(['ofu', ofu_n, '_dnasequences.fna'])
+					dna_outf = open(os.path.join(outpath, ofu_dnaseqfile), 'w')
+					for bgc in bgcs:
+						with open(args.dna_fasta, 'r') as inf_d:
+							dna_outf = compile_ofu_dnasequences(inf_d, bgc, dna_outf)
+					dna_outf.close()
+			print('Sequence files written for %d OFUs.\n' % i)
+		else:
+			pass
+	if args.name:  # if using to look up OFUs from the RefSeq IDs, run this bit
+		orgs = args.name
+		height = args.height
+		list_organism_ofus(orgs, hclus, height, outpath)
+
 	sys.exit()
 
 
