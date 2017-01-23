@@ -184,12 +184,12 @@ def main():
 						cpus = int(cpu_count() / 2)
 						print('Blasting OFU%s against database using %s cpus\n' % (ofu_n, cpus))
 						mibig_db = str(os.path.relpath(args.mibig))
-						if ' ' in mibig_db:
-							mibig_db = mibig_db.replace(' ', '\ ')
+						# if ' ' in mibig_db:
+						# 	mibig_db = mibig_db.replace(' ', '\ ')
 						# print(mibig_db)
 						ofu_query = str(os.path.join(outpath, ofu_aaseqfile))
-						if ' ' in ofu_query:
-							ofu_query = ofu_query.replace(' ', '\ ')
+						# if ' ' in ofu_query:
+						# 	ofu_query = ofu_query.replace(' ', '\ ')
 						# print(ofu_query)
 						blastresult = run_blastp(ofu_query, mibigout, mibig_db, cpus)
 						blastout.write(blastresult)

@@ -16,7 +16,7 @@ def make_arg_parser():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-o","--output",
 		required=True,
-		help="Output filename [required]") 
+		help="Output filename [required]")
 	return parser
 def main():
 	outfile = pd.DataFrame()

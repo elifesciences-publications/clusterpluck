@@ -14,6 +14,22 @@ def run_blastp(infile, outfile, database, cpus, evalue=1e-10, shell=False):
 	:param shell: whether to use the shell NOT RECOMMENDED (default=False)
 	:return: the STDERR/STDOUT
 	"""
+
+	if ' ' in infile:
+	# 	infile = infile.replace('\ ', ' ')
+		infile = ''.join(['"', infile, '"'])
+	if ' ' in outfile:
+	# 	outfile = outfile.replace('\ ', ' ')
+		outfile = ''.join(['"', outfile, '"'])
+	if ' ' in database:
+		database = ''.join(['"', database, '"'])
+
+	print('\n')
+	print(infile)
+	print(outfile)
+
+	print(database)
+
 	cmd = ['blastp',
 		'-db', str(database),
 		'-query', str(infile),
