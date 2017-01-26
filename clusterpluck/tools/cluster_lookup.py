@@ -121,7 +121,7 @@ def list_organism_ofus(orgs, hclus, height, outpath):
 	db = RefSeqDatabase()
 	nt = NCBITree()
 	for org in orgs_list:
-		print(org)
+		# print(org)
 		org_ofu_dup = []
 		for ofu_num, ofu_orgs in bgc_dd.items():
 			for ofu_org in ofu_orgs:
@@ -148,6 +148,11 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	outpath = args.output
+	if not os.path.isdir(outpath):
+		os.mkdir(outpath)
+		if not os.path.isdir(outpath):
+			print('\nError creating output directory; check given path and try again\n')
+			sys.exit()
 	with open(args.scores, 'r') as inf:
 		h = 1 - (args.height / 100)
 		hclus = process_hierarchy(inf, h)

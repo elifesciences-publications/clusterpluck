@@ -108,7 +108,7 @@ def main():
 		with open(args.ofus, 'r') as inofu:
 			opt = args.multiples
 			ofu_matched = match_tables(intax, inofu, opt)
-		if args.no_profiles:
+		if not args.no_profiles:
 			with open(args.profiles, 'w') as profile_out:
 				ofu_matched.to_csv(profile_out)
 		with open(args.taxons, 'r') as intaxm:
