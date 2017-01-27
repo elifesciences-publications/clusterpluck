@@ -31,7 +31,7 @@ def make_arg_parser():
 	return parser
 
 
-def list_organisms(ofus, hclus, typetable, outpath):
+def list_organisms(ofus, hclus, typetable, outpath, cut_h):
 	bgc_dd = defaultdict(list)
 	for value, key in hclus.itertuples(index=True):
 		key = str('%05d' % key)
@@ -62,7 +62,7 @@ def list_organisms(ofus, hclus, typetable, outpath):
 					name_dict[bgc] = [ctype, refseqid]
 				else:
 					name_dict[bgc] = [ctype, name]
-		ofu_file = ''.join(['ofu', ofu_n, '.txt'])
+		ofu_file = ''.join(['ofu', ofu_n, '_id', cut_h, '.txt'])
 		with open(os.path.join(outpath, ofu_file), 'w') as outf:
 			outdf = pd.DataFrame.from_dict(name_dict, orient='index')
 			outdf.columns = ['predicted_type', 'organism']
@@ -132,7 +132,7 @@ def list_organism_ofus(orgs, hclus, height, outpath):
 						ofu_dict[name].extend([ofu_num])
 					else:
 						pass
-	height = str(int(height))
+	height = str(height)
 	ofu_file = ''.join(['OFUs_from_refseq_id', height, '.txt'])
 	outdf = pd.DataFrame.from_dict(ofu_dict, orient='index')
 	if not outdf.empty:
@@ -163,7 +163,8 @@ def main():
 		typetable = False
 	if args.ofu:
 		ofus = args.ofu
-		bgc_dd = list_organisms(ofus, hclus, typetable, outpath)
+		cut_h = str(args.height)
+		bgc_dd = list_organisms(ofus, hclus, typetable, outpath, cut_h)
 		if args.dna_fasta or args.mpfa:  # only generate OFU sequence files if the appropriate files are provided
 			ofu_list = ofus.split(',')
 			i = 0
@@ -175,7 +176,7 @@ def main():
 					ofu_n = ofu
 				bgcs = bgc_dd[ofu_n]
 				if args.mpfa:
-					ofu_aaseqfile = ''.join(['ofu', ofu_n, '_aasequences.mpfa'])
+					ofu_aaseqfile = ''.join(['ofu', ofu_n, '_id', cut_h, '_aasequences.mpfa'])
 					aa_outf = open(os.path.join(outpath, ofu_aaseqfile), 'w')
 					for bgc in bgcs:
 						with open(args.mpfa, 'r') as inf_m:
@@ -200,7 +201,7 @@ def main():
 						blastout.write(blastresult)
 						blastout.close()
 				if args.dna_fasta:
-					ofu_dnaseqfile = ''.join(['ofu', ofu_n, '_dnasequences.fna'])
+					ofu_dnaseqfile = ''.join(['ofu', ofu_n, '_id', cut_h, '_dnasequences.fna'])
 					dna_outf = open(os.path.join(outpath, ofu_dnaseqfile), 'w')
 					for bgc in bgcs:
 						with open(args.dna_fasta, 'r') as inf_d:
