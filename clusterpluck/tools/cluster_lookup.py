@@ -1,18 +1,20 @@
 #!/usr/bin/env Python
 
 import argparse
-import sys
 import os
-import pandas as pd
+import sys
 from collections import defaultdict
-from clusterpluck.tools.annotations import refseq_to_name
-from clusterpluck.tools.h_clustering import process_hierarchy
-from clusterpluck.scripts.run_blastp import run_blastp
-from clusterpluck.tools.suppress_print import suppress_stdout
+from multiprocessing import cpu_count
+
+import pandas as pd
 from ninja_dojo.database import RefSeqDatabase
 from ninja_dojo.taxonomy import NCBITree
 from ninja_utils.parsers import FASTA
-from multiprocessing import cpu_count
+
+from clusterpluck.tools.annotations import refseq_to_name
+from clusterpluck.tools.h_clustering import process_hierarchy
+from clusterpluck.tools.suppress_print import suppress_stdout
+from clusterpluck.wrappers.run_blastp import run_blastp
 
 
 # The arg parser
