@@ -16,12 +16,12 @@ def make_arg_parser():
 	parser.add_argument('-i', '--input', help='Directory containing the FASTA files (.fna) to run.', required=True)
 	parser.add_argument('-p', '--threads', help='Number of threads to use in SHOGUN.', required=False, default=36)
 	parser.add_argument('-u', '--utree', help='Path to the UTree database (.ctr file).', required=True)
-	parser.add_argument('-c', '--cp_resources', help='Path to the ofu_keys directory, OFU files names as *_[%ID]ofu.csv', required=True)
+	parser.add_argument('-c', '--cp_resources', help='Path to the ofu_keys directory, OFU files names as *_[id]ofu.csv', required=True)
 	parser.add_argument('-m', '--multiples', help='When multiple strains for species-level match:'
-												  '[average] the OFU tallies,'
-												  '[summarize] all the possible OFUs,'
-												  'select only [universal] OFUs,'
-												  'select only OFUs in a [majority] of strains', required=False, default='majority')
+											'[average] the OFU tallies,'
+											'[summarize] all the possible OFUs,'
+											'select only [universal] OFUs,'
+											'select only OFUs in a [majority] of strains', required=False, default='majority')
 	parser.add_argument('-o', '--output', help='Where to save the output data; default = cwd', required=False, default='shofun_utree_results')
 	return parser
 

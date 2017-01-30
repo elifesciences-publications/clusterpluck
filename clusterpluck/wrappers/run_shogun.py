@@ -22,7 +22,7 @@ def run_shogun(inpath, outpath, utree_db, threads, shell=False):
 	if ' ' in utree_db:
 		utree_db = ''.join(['"', utree_db, '"'])
 
-	cmd = ['blastp',
+	cmd = ['shogun_utree_lca',
 		'-i', str(inpath),
 		'-o', str(outpath),
 		'-u', str(utree_db),

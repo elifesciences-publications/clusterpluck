@@ -41,6 +41,6 @@ setup(
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
 		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main',
 		'cluster_lookup = clusterpluck.tools.cluster_lookup:main',
-		'shOFUn = clusterpluck.wrappers.shOFUn:main',
+		'shofun = clusterpluck.wrappers.shofun:main',
 	]),
 )
