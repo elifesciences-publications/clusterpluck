@@ -90,7 +90,7 @@ def multiply_tables(intaxm, ofu_matched):
 		print('\nUsing OFU index to limit to common taxa...\n')
 		tdf = tdf.loc[ofu_list]
 	print('Final taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
-	print('Final ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1], '\n')
+	# print('Final ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1], '\n')
 	ofu_table = tdf.T.dot(ofu_matched)  # taking the dot product in this direction gives the relative abundance of OFUs based on observations of the taxon
 	if ofu_table.empty:
 		print('\nError multiplying matrices. Check dimensions.\n')
@@ -114,6 +114,7 @@ def main():
 		with open(args.taxons, 'r') as intaxm:
 			ofu_table = multiply_tables(intaxm, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
+			print('Final ofu profile dimensions = ', ofu_table.shape[0], ',', ofu_table.shape[1], '\n')
 		with open(args.output, 'w') as outf:
 			ofu_table = ofu_table.round(decimals=2)
 			ofu_table.to_csv(outf)
