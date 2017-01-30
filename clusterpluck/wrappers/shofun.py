@@ -33,7 +33,7 @@ def main():
 	cpus = int(args.threads)
 	cpus_avail = cpu_count()
 	opt = args.multiples
-	if cpus_avail > cpus:
+	if cpus_avail < cpus:
 		print('The number of processors requested is not available; maximum on this system is %s' % cpus_avail)
 		sys.exit()
 	indir = args.input
