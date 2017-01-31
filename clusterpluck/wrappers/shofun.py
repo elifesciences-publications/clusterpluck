@@ -58,7 +58,8 @@ def main():
 			print('Final ofu profile dimensions = ', ofu_table.shape[0], ',', ofu_table.shape[1], '\n')
 		os.mkdir(os.path.join(outdir, 'ofu_profiles'))
 		ofu_output = os.path.join(outdir, 'ofu_profiles')
-		with open(os.path.join(ofu_output, 'profile_at_', ofu_prof_id, '.csv'), 'w') as outf:
+		ofu_outname = ''.join([ofu_prof_id, 'profile.csv'])
+		with open(os.path.join(ofu_output, ofu_outname), 'w') as outf:
 			ofu_table = ofu_table.round(decimals=2)
 			ofu_table.to_csv(outf)
 	print('\nOFU profiles written to file\n')
