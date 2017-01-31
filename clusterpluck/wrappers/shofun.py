@@ -45,6 +45,8 @@ def main():
 	cp_dir = args.cp_resources
 	run_shogun(indir, outdir, utree, cpus)
 	print('\nSHOGUN finished!... calculating OFU profiles...')
+	if not os.path.isdir(os.path.join(outdir, 'ofu_profiles')):
+		os.mkdir(os.path.join(outdir, 'ofu_profiles'))
 	for ofu_prof in os.listdir(cp_dir):
 		ofu_prof_id = ofu_prof.split('_')[-1]
 		ofu_prof_id = ofu_prof_id.split('.')[0]
@@ -56,7 +58,6 @@ def main():
 			ofu_table = multiply_tables(taxons, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
 			print('Final ofu profile dimensions = ', ofu_table.shape[0], ',', ofu_table.shape[1], '\n')
-		os.mkdir(os.path.join(outdir, 'ofu_profiles'))
 		ofu_output = os.path.join(outdir, 'ofu_profiles')
 		ofu_outname = ''.join([ofu_prof_id, 'profile.csv'])
 		with open(os.path.join(ofu_output, ofu_outname), 'w') as outf:
