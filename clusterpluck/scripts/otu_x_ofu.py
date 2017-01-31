@@ -104,10 +104,9 @@ def main():
 	args = parser.parse_args()
 
 	# Parse command line
-	with open(args.taxons, 'r') as intax:
-		with open(args.ofus, 'r') as inofu:
-			opt = args.multiples
-			ofu_matched = match_tables(intax, inofu, opt)
+	with open(args.taxons, 'r') as intax, open(args.ofus, 'r') as inofu:
+		opt = args.multiples
+		ofu_matched = match_tables(intax, inofu, opt)
 		if not args.no_profiles:
 			with open(args.profiles, 'w') as profile_out:
 				ofu_matched.to_csv(profile_out)

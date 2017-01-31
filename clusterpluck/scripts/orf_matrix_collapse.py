@@ -89,35 +89,34 @@ def main():
 	with open(args.mpfa, 'r') as inf:
 		# Generates dictionary with each unique 'refseq_cluster' as keys, ORFs as values
 		cluster_map = build_cluster_map(inf, bread=args.bread)
-	with open(args.input, 'r') as in_csv:
-		with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-			if not args.pieces:
-				outdf = cluster_by_cluster(cluster_map, in_csv)
-				outdf = outdf.round(decimals=2)
-				outdf.to_csv(outf)
-			else:
-				print('\nOk, processing input file in pieces...\n')
-				inkey = generate_index_list(in_csv)
-				c_list = list(cluster_map.keys())
-				ct = len(c_list)
-				print('Found %d clusters...' % ct)
-				mat = np.zeros((ct, ct))  # initializes an array of the dimensions necessary to fit all cluster results
-				j = 0
-				for cluster in c_list:
-					grab = pick_a_cluster(inkey, cluster)
-					# print(grab)
-					with open(args.input, 'r') as inf3:
-						mat = big_cluster_by_cluster(grab, inkey, c_list, inf3, mat, j)
-					# print(mat)
-					j += 1
-				print('File processing complete; writing output file...\n')
-				outdf = pd.DataFrame(mat, dtype=float)
-				outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
-				outdf.index = c_list
-				outdf.sort_index(axis=0, inplace=True)
-				outdf.sort_index(axis=1, inplace=True)
-				outdf = outdf.round(decimals=2)
-				outdf.to_csv(outf)
+	with open(args.input, 'r') as in_csv, open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
+		if not args.pieces:
+			outdf = cluster_by_cluster(cluster_map, in_csv)
+			outdf = outdf.round(decimals=2)
+			outdf.to_csv(outf)
+		else:
+			print('\nOk, processing input file in pieces...\n')
+			inkey = generate_index_list(in_csv)
+			c_list = list(cluster_map.keys())
+			ct = len(c_list)
+			print('Found %d clusters...' % ct)
+			mat = np.zeros((ct, ct))  # initializes an array of the dimensions necessary to fit all cluster results
+			j = 0
+			for cluster in c_list:
+				grab = pick_a_cluster(inkey, cluster)
+				# print(grab)
+				with open(args.input, 'r') as inf3:
+					mat = big_cluster_by_cluster(grab, inkey, c_list, inf3, mat, j)
+				# print(mat)
+				j += 1
+			print('File processing complete; writing output file...\n')
+			outdf = pd.DataFrame(mat, dtype=float)
+			outdf.columns = c_list  # names the columns (and index, next line) according to clusters in the order they were processed
+			outdf.index = c_list
+			outdf.sort_index(axis=0, inplace=True)
+			outdf.sort_index(axis=1, inplace=True)
+			outdf = outdf.round(decimals=2)
+			outdf.to_csv(outf)
 
 
 if __name__ == '__main__':

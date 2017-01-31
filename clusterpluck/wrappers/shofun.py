@@ -51,9 +51,8 @@ def main():
 		ofu_prof_id = ofu_prof.split('_')[-1]
 		ofu_prof_id = ofu_prof_id.split('.')[0]
 		ofu_prof = os.path.join(cp_dir, ofu_prof)
-		with open(ofu_prof, 'r') as inofu:
-			with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
-				ofu_matched = match_tables(taxons, inofu, opt)
+		with open(ofu_prof, 'r') as inofu, open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
+			ofu_matched = match_tables(taxons, inofu, opt)
 		with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
 			ofu_table = multiply_tables(taxons, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
