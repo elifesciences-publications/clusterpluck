@@ -14,14 +14,14 @@ from multiprocessing import cpu_count
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Run SHOGUN lca with UTree, then compute 1-100% OFU tables.')
 	parser.add_argument('-i', '--input', help='Directory containing the FASTA files (.fna) to run.', required=True)
-	parser.add_argument('-p', '--threads', help='Number of threads to use in SHOGUN.', required=False, default=36)
+	parser.add_argument('-p', '--threads', help='Number of threads to use in SHOGUN (default=36).', required=False, default=36)
 	parser.add_argument('-u', '--utree', help='Path to the UTree database (.ctr file).', required=True)
 	parser.add_argument('-c', '--cp_resources', help='Path to the ofu_keys directory, OFU files names as *_[id]ofu.csv', required=True)
 	parser.add_argument('-m', '--multiples', help='When multiple strains for species-level match:'
 											'[average] the OFU tallies,'
 											'[summarize] all the possible OFUs,'
 											'select only [universal] OFUs,'
-											'select only OFUs in a [majority] of strains', required=False, default='majority')
+											'select only OFUs in a [majority] of strains (default=majority)', required=False, default='majority')
 	parser.add_argument('-o', '--output', help='Where to save the output data; default = cwd', required=False, default='shofun_utree_results')
 	return parser
 
@@ -48,7 +48,7 @@ def main():
 	for ofu_prof in os.listdir(cp_dir):
 		ofu_prof_id = ofu_prof.split('_')[-1]
 		ofu_prof_id = ofu_prof_id.split('.')[0]
-		with open(inofu, 'r') as inofu:
+		with open(ofu_prof, 'r') as inofu:
 			with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
 				ofu_matched = match_tables(taxons, inofu, opt)
 		with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
