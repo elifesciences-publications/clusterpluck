@@ -57,9 +57,9 @@ def main():
 		with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
 			ofu_table = multiply_tables(taxons, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
-			print('Final ofu profile dimensions = ', ofu_table.shape[0], ',', ofu_table.shape[1], '\n')
+			print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
 		ofu_output = os.path.join(outdir, 'ofu_profiles')
-		ofu_outname = ''.join([ofu_prof_id, 'profile.csv'])
+		ofu_outname = ''.join([ofu_prof_id, '_table.csv'])
 		with open(os.path.join(ofu_output, ofu_outname), 'w') as outf:
 			ofu_table = ofu_table.round(decimals=2)
 			ofu_table.to_csv(outf)

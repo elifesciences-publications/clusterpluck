@@ -114,7 +114,7 @@ def main():
 		with open(args.taxons, 'r') as intaxm:
 			ofu_table = multiply_tables(intaxm, ofu_matched)
 			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
-			print('Final ofu profile dimensions = ', ofu_table.shape[0], ',', ofu_table.shape[1], '\n')
+			print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
 		with open(args.output, 'w') as outf:
 			ofu_table = ofu_table.round(decimals=2)
 			ofu_table.to_csv(outf)
