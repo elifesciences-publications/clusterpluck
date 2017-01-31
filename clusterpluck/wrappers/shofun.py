@@ -47,7 +47,7 @@ def main():
 	print('\nSHOGUN finished!... calculating OFU profiles...')
 	for ofu_prof in os.listdir(cp_dir):
 		ofu_prof_id = ofu_prof.split('_')[-1]
-		ofu_prof_id = inofu_num.split('.')[0]
+		ofu_prof_id = ofu_prof_id.split('.')[0]
 		with open(inofu, 'r') as inofu:
 			with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
 				ofu_matched = match_tables(taxons, inofu, opt)
