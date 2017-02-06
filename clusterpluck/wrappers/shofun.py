@@ -48,9 +48,11 @@ def main():
 	if not os.path.isdir(os.path.join(outdir, 'ofu_profiles')):
 		os.mkdir(os.path.join(outdir, 'ofu_profiles'))
 	for ofu_prof in os.listdir(cp_dir):
+		# Extract the OFU id level from the profile file name
 		ofu_prof_id = ofu_prof.split('_')[-1]
 		ofu_prof_id = ofu_prof_id.split('.')[0]
 		ofu_prof = os.path.join(cp_dir, ofu_prof)
+		# Limit the ofu profile to those taxa matching the shogun output
 		with open(ofu_prof, 'r') as inofu, open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
 			ofu_matched = match_tables(taxons, inofu, opt)
 		with open(os.path.join(outdir, 'taxon_counts.csv'), 'r') as taxons:
