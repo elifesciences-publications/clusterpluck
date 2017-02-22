@@ -94,7 +94,7 @@ def main():
 	inpath = os.path.join(outpath, tempdir)
 	to_align_out = rep_seqs(inpath, cut_h)
 	print('Running alignment with MUSCLE...\n')
-	aligned = os.path.join(outpath, ''.join(['OFU_alignment_id', cut_h, '.afa']))
+	aligned = os.path.join(outpath, ''.join(['OFU_alignment_id', cut_h, '.fa']))
 	alignment_log = os.path.join(outpath, tempdir, ''.join(['OFU_alignment_id', cut_h, 'log.log']))
 	os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 3', '-diags1']))
 	# DEBUG
@@ -102,9 +102,9 @@ def main():
 	print('Alignment completed, building tree...\n')
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	tree_log = os.path.join(outpath, tempdir, ''.join(['OFU_tree_id', cut_h, 'log.log']))
-	os.system(' '.join(['fasttree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
+	os.system(' '.join(['FastTree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
 	# DEBUG
-	# print(' '.join(['fasttree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
+	# print(' '.join(['FastTree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
 	print('Tree written to Newick Format successfully!')
 	if not args.no_cleanup:
 		print('Alrighty, cleaning up temp files...\n')
