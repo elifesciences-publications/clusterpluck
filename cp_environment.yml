@@ -8,6 +8,8 @@ dependencies:
   - cytoolz
   - blast
   - pandas
+  - muscle
+  - fasttree
   - pip
   - pip:
     - "git+https://github.com/knights-lab/NINJA-utils.git"

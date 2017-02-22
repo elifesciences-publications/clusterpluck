@@ -24,7 +24,7 @@ setup(
 	long_description=long_description,
 	# scripts=glob(os.path.join('clusterpluck', 'scripts', '*py')),
 	keywords='',
-	install_requires=['numpy', 'scipy'],
+	install_requires=['numpy', 'scipy', 'fasttree', 'muscle'],
 	entry_points=dict(console_scripts=[
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
 		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq:main',
@@ -41,6 +41,7 @@ setup(
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
 		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main',
 		'cluster_lookup = clusterpluck.tools.cluster_lookup:main',
+		'build_ofu_tree = clusterpluck.scripts.build_ofu_tree:main',
 		'shofun = clusterpluck.wrappers.shofun:main',
 	]),
 )
