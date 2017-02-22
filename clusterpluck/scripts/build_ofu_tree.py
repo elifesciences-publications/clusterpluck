@@ -3,7 +3,7 @@
 import argparse
 import sys
 import os
-import pandas as pd
+import shutil
 from collections import defaultdict
 from clusterpluck.tools.h_clustering import process_hierarchy
 from ninja_utils.parsers import FASTA
@@ -22,7 +22,7 @@ def make_arg_parser():
 						help='The multi-fasta resource containing cluster DNA sequences for this ClusterPluck database', required=True)
 	parser.add_argument('-o', '--output',
 						help='Directory in which to save the cluster information files (default = cwd)', required=False, default='.')
-	parser.add_argument('--no_cleanup',
+	parser.add_argument('-no_cleanup',
 						help='Keep all intermediate temp and log files', action='store_true', required=False, default=False)
 	return parser
 
@@ -54,8 +54,10 @@ def rep_seqs(inpath, cut_h):
 	align_out = os.path.join(inpath, ''.join(['repseqs_id', cut_h, '.fna']))
 	to_align = open(align_out, 'w')
 	for f in os.listdir(inpath):
-		longrep = max(open(f, 'r'), key=len)
-		to_align.write(longrep.replace('|SPLIT_HERE|', '\n'))
+		if f.endswith('.fna'):
+			f = os.path.join(inpath, f)
+			longrep = max(open(f, 'r'), key=len)
+			to_align.write(longrep.replace('|SPLIT_HERE|', '\n'))
 	to_align.close()
 	return align_out
 
@@ -65,9 +67,10 @@ def main():
 	args = parser.parse_args()
 	# Parse command line
 	outpath = args.output
-	cut_h = args.height
+	cut_h = str(args.height)
+	h = float(args.height)
 	tempdir = ''.join(['temp_id', cut_h])
-	h = 1 - (args.height / 100)
+	h = 1 - (h / 100)
 	if not os.path.isdir(outpath):
 		os.mkdir(outpath)
 		os.mkdir(os.path.join(outpath, tempdir))
@@ -93,16 +96,19 @@ def main():
 	print('Running alignment with MUSCLE...\n')
 	aligned = os.path.join(outpath, ''.join(['OFU_alignment_id', cut_h, '.afa']))
 	alignment_log = os.path.join(outpath, tempdir, ''.join(['OFU_alignment_id', cut_h, 'log.log']))
-	# os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
-	print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
+	os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 3', '-diags1']))
+	# DEBUG
+	# print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
 	print('Alignment completed, building tree...\n')
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	tree_log = os.path.join(outpath, tempdir, ''.join(['OFU_tree_id', cut_h, 'log.log']))
-	# os.system(' '.join(['fasttree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
-	print(' '.join(['fasttree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
+	os.system(' '.join(['fasttree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
+	# DEBUG
+	# print(' '.join(['fasttree', '-log', tree_log, '-nt', '-gtr', '-pseudo', aligned, '>', newick_tree]))
+	print('Tree written to Newick Format successfully!')
 	if not args.no_cleanup:
 		print('Alrighty, cleaning up temp files...\n')
-		os.remove(os.path.join(outpath, tempdir))
+		shutil.rmtree((os.path.join(outpath, tempdir)), ignore_errors=False, onerror=None)
 
 
 if __name__ == '__main__':
