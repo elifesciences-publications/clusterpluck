@@ -54,7 +54,7 @@ def rep_seqs(inpath, cut_h):
 	align_out = os.path.join(inpath, ''.join(['repseqs_id', cut_h, '.fna']))
 	to_align = open(align_out, 'w')
 	for f in os.listdir(inpath):
-		if f.endswith('.fna'):
+		if f.endswith('dnasequences.fna'):
 			f = os.path.join(inpath, f)
 			print(f)
 			longrep = max(open(f, 'r'), key=len)
