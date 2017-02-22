@@ -56,6 +56,7 @@ def rep_seqs(inpath, cut_h):
 	for f in os.listdir(inpath):
 		if f.endswith('.fna'):
 			f = os.path.join(inpath, f)
+			print(f)
 			longrep = max(open(f, 'r'), key=len)
 			to_align.write(longrep.replace('|SPLIT_HERE|', '\n'))
 	to_align.close()
