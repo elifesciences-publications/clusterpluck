@@ -56,7 +56,7 @@ def rep_seqs(inpath, cut_h):
 	for f in os.listdir(inpath):
 		if f.endswith('dnasequences.fna'):
 			f = os.path.join(inpath, f)
-			print(f)
+			# print(f)
 			longrep = max(open(f, 'r'), key=len)
 			to_align.write(longrep.replace('|SPLIT_HERE|', '\n'))
 	to_align.close()
@@ -97,9 +97,12 @@ def main():
 	print('Running alignment with MUSCLE...\n')
 	aligned = os.path.join(outpath, ''.join(['OFU_alignment_id', cut_h, '.fa']))
 	alignment_log = os.path.join(outpath, tempdir, ''.join(['OFU_alignment_id', cut_h, 'log.log']))
-	os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 3', '-diags1']))
+	os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 2', '-diags1']))
 	# DEBUG
 	# print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
+	if aligned not in os.listdir(outpath):
+		print('\nAlignment failed... exiting now.\n')
+		sys.exit()
 	print('Alignment completed, building tree...\n')
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	tree_log = os.path.join(outpath, tempdir, ''.join(['OFU_tree_id', cut_h, 'log.log']))
