@@ -95,12 +95,13 @@ def main():
 	inpath = os.path.join(outpath, tempdir)
 	to_align_out = rep_seqs(inpath, cut_h)
 	print('Running alignment with MUSCLE...\n')
-	aligned = os.path.join(outpath, ''.join(['OFU_alignment_id', cut_h, '.fa']))
+	alignfile = ''.join(['OFU_alignment_id', cut_h, '.fa'])
+	aligned = os.path.join(outpath, alignfile)
 	alignment_log = os.path.join(outpath, tempdir, ''.join(['OFU_alignment_id', cut_h, 'log.log']))
 	os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 2', '-diags1']))
 	# DEBUG
 	# print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
-	if aligned not in os.listdir(outpath):
+	if alignfile not in os.listdir(outpath):
 		print('\nAlignment failed... exiting now.\n')
 		sys.exit()
 	print('Alignment completed, building tree...\n')
