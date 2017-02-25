@@ -9,7 +9,7 @@ import csv
 import sys
 import pandas as pd
 from collections import defaultdict
-from ninja_dojo.taxonomy import NCBITree
+from dojo.taxonomy import NCBITree
 from ninja_utils.parsers import FASTA
 
 
