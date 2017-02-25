@@ -20,10 +20,14 @@ def make_arg_parser():
 						required=True, default=70)
 	parser.add_argument('-dna_fasta',
 						help='The multi-fasta resource containing cluster DNA sequences for this ClusterPluck database', required=True)
+	parser.add_argument('-a', '--aligner',
+						help='Whether to use "muscle" or "clustalo" for alignment (default = clustalo)', required=False, default='clustalo')
 	parser.add_argument('-o', '--output',
 						help='Directory in which to save the cluster information files (default = cwd)', required=False, default='.')
 	parser.add_argument('-no_cleanup',
 						help='Keep all intermediate temp and log files', action='store_true', required=False, default=False)
+	parser.add_argument('-p', '--cpus',
+						help='Number of cpus to use for the alignment, if using Clustal Omega', required=False, default=4)
 	return parser
 
 
@@ -53,6 +57,7 @@ def ofu_dnasequences(inf_d, bgc, ofu_name, dna_outf):
 def rep_seqs(inpath, cut_h):
 	align_out = os.path.join(inpath, ''.join(['repseqs_id', cut_h, '.fna']))
 	to_align = open(align_out, 'w')
+	# TODO: Select the line of median length, not longest (or give the option in args)
 	for f in os.listdir(inpath):
 		if f.endswith('dnasequences.fna'):
 			f = os.path.join(inpath, f)
@@ -67,6 +72,7 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	# Parse command line
+	cpus = int(args.cpus)
 	outpath = args.output
 	cut_h = str(args.height)
 	h = float(args.height)
@@ -98,9 +104,12 @@ def main():
 	alignfile = ''.join(['OFU_alignment_id', cut_h, '.fa'])
 	aligned = os.path.join(outpath, alignfile)
 	alignment_log = os.path.join(outpath, tempdir, ''.join(['OFU_alignment_id', cut_h, 'log.log']))
-	os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 2', '-diags1']))
-	# DEBUG
-	# print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
+	if args.aligner == 'muscle':
+		os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 2', '-diags1']))
+		# DEBUG
+		# print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
+	if args.aligner == 'clustalo':
+		os.system(' '.join(['clustalo', '-i', to_align_out, '-t DNA', '-o', aligned, '--outfmt=fasta', '-l', alignment_log, '--iterations 3', '--threads=%d' % cpus]))
 	if alignfile not in os.listdir(outpath):
 		print('\nAlignment failed... exiting now.\n')
 		sys.exit()
