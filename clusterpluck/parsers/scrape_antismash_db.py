@@ -211,12 +211,12 @@ def main():
 			if line[1] in gbk_set:
 				tid = line[2]
 				organism = tid_to_name(tid, nt=nt)
-				print(line[1] + tid + organism)
+				# print(line[1] + tid + organism)
 				gbk_dd[line[1]] = [tid, organism]
 	for gbk_file in gbks:
 		gbk_id = gbk_file.split('.cluster')[0]
 		tid_org = gbk_dd[gbk_id]
-		print(tid_org)
+		# print(tid_org)
 		ncbi_tid = str(tid_org[0])
 		organism = str(tid_org[1])
 		gbk_filepath = os.path.join(gbkpath, gbk_file)
