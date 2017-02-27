@@ -195,13 +195,13 @@ def main():
 	nt_cat = os.path.join(args.nt_cat)
 	gbkpath = os.path.join(args.input)
 	outpath = os.path.join(args.output)
-	logfile = os.path.join(outpath, 'scrapelog.log')
-	logging.basicConfig(filename=logfile, level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 	if not os.path.isdir(outpath):
 		os.mkdir(os.path.join(outpath))
 		if not os.path.isdir(outpath):
 			print('\nError creating output directory; check given path and try again\n')
 			sys.exit()
+	logfile = os.path.join(outpath, 'scrapelog.log')
+	logging.basicConfig(filename=logfile, level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 	gbks = os.listdir(gbkpath)
 	gbks = [f for f in gbks if f.endswith('gbk')]
 	with open(nt_cat, 'r') as nt_catalog:
