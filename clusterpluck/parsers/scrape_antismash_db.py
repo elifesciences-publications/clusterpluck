@@ -134,8 +134,7 @@ def parse_cluster_types(gbkpath, outpath, gbk_dd):
 			tid_org = []
 			tid_org = gbk_dd[gbk_id]
 			if not tid_org:
-				print('Error getting taxonomy for %s for cluster file %s' % (gbk_id, gbk))
-				tid_org = [gbk, 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None']
+				tid_org = ['na', 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None']
 			ncbi_tid = str(tid_org[0])
 			organism = str(tid_org[1])
 			cluster_label = 'ncbi_tid|%s|genbank|%s|organism|%s' % (ncbi_tid, clusterid, organism)
@@ -220,9 +219,12 @@ def main():
 	for gbk_file in gbks:
 		gbk_id = gbk_file.split('.cluster')[0]
 		tid_org = gbk_dd[gbk_id]
+		if not tid_org:
+			print('Error getting taxonomy for %s for cluster file %s' % (gbk_id, gbk_file))
+			tid_org = ['na', 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None']
 		# print(tid_org)
-		ncbi_tid = str(tid_org[0])
-		organism = str(tid_org[1])
+		# ncbi_tid = str(tid_org[0])
+		# organism = str(tid_org[1])
 		gbk_filepath = os.path.join(gbkpath, gbk_file)
 		parse_aa_seqs(gbk_file, tid_org, gbk_filepath, outpath)
 		parse_dna_seqs(gbk_file, tid_org, gbk_filepath, outpath)
