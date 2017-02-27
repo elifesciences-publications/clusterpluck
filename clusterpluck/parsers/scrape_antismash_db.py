@@ -132,7 +132,7 @@ def parse_cluster_types(gbkpath, outpath, gbk_dd):
 			clusterid = gbk.replace('.gbk', '')
 			clusterid = clusterid.replace('.clu', '_clu')
 			gbk_id = gbk.split('.cluster')[0]
-			tid_org = []
+			# tid_org = []
 			tid_org = gbk_dd[gbk_id]
 			if not tid_org:
 				tid_org = ['na', 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None']
@@ -143,9 +143,17 @@ def parse_cluster_types(gbkpath, outpath, gbk_dd):
 				for line in in_gbk:
 					if cluster_begin:
 						if line.startswith("                     /product"):
-							p = re.compile(r"^(\s+)\/(product)=\"(.*)\"")
-							m = p.search(line)  # searches using the regex defined above
-							prod = str(m.group(3))
+							if line.endswith("\"\n"):
+								p = re.compile(r"^(\s+)\/(product)=\"(.*)\"")
+								m = p.search(line)
+								prod = str(m.group(3))
+							else:
+								p = re.compile(r"^(\s+)\/(product)=\"(.*)$")
+								m = p.search(line)
+								nxline = next(in_gbk)
+								p2 = re.compile(r"(                     )(.*)\"")
+								m2 = p2.search(nxline)
+								prod = ' '.join([str(m.group(3)), str(m2.group(2))])
 							type_dd[cluster_label] = prod
 						elif line.startswith("     gene"):
 							cluster_begin = False
