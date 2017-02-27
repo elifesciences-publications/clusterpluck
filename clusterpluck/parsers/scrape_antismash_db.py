@@ -8,6 +8,7 @@ import re
 import csv
 import sys
 import pandas as pd
+import logging
 from collections import defaultdict
 from dojo.taxonomy import NCBITree
 from ninja_utils.parsers import FASTA
@@ -194,6 +195,8 @@ def main():
 	nt_cat = os.path.join(args.nt_cat)
 	gbkpath = os.path.join(args.input)
 	outpath = os.path.join(args.output)
+	logfile = os.path.join(outpath, 'scrapelog.log')
+	logging.basicConfig(filename=logfile, level=logging.DEBUG, format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 	if not os.path.isdir(outpath):
 		os.mkdir(os.path.join(outpath))
 		if not os.path.isdir(outpath):
@@ -216,12 +219,15 @@ def main():
 				organism = tid_to_name(tid, nt=nt)
 				# print(line[1] + tid + organism)
 				gbk_dd[line[1]] = [tid, organism]
+	i = 0
 	for gbk_file in gbks:
 		gbk_id = gbk_file.split('.cluster')[0]
 		tid_org = gbk_dd[gbk_id]
 		if not tid_org:
 			print('Error getting taxonomy for %s for cluster file %s' % (gbk_id, gbk_file))
+			logging.warning('Error getting taxonomy for %s for cluster file %s' % (gbk_id, gbk_file))
 			tid_org = ['na', 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None']
+			i += 1
 		# print(tid_org)
 		# ncbi_tid = str(tid_org[0])
 		# organism = str(tid_org[1])
@@ -231,6 +237,7 @@ def main():
 	parse_cluster_types(gbkpath, outpath, gbk_dd)
 	if not args.no_compile:
 		compile_files(outpath)
+	logging.warning('DOJO could not acquire NCBI tid information for %s clusters' % i)
 
 if __name__ == '__main__':
 	main()
