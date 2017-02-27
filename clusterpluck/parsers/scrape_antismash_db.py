@@ -131,7 +131,11 @@ def parse_cluster_types(gbkpath, outpath, gbk_dd):
 			clusterid = gbk.replace('.gbk', '')
 			clusterid = clusterid.replace('.clu', '_clu')
 			gbk_id = gbk.split('.cluster')[0]
+			tid_org = []
 			tid_org = gbk_dd[gbk_id]
+			if not tid_org:
+				print('Error getting taxonomy for %s for cluster file %s' % (gbk_id, gbk))
+				tid_org = [gbk, 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None']
 			ncbi_tid = str(tid_org[0])
 			organism = str(tid_org[1])
 			cluster_label = 'ncbi_tid|%s|genbank|%s|organism|%s' % (ncbi_tid, clusterid, organism)
