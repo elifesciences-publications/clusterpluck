@@ -27,47 +27,38 @@ def make_arg_parser():
 	return parser
 
 
-def main():
-	parser = make_arg_parser()
-	args = parser.parse_args()
-
+def ofu_tree_parsing(infile, s_method, t):
 	sparse_blast_id_dict = defaultdict(dict)
-	with open(args.input) as blast_inf:
-			# next(blast_inf)
+	with open(infile) as blast_inf:
+		# next(blast_inf)
 		blast_tsv = csv.reader(blast_inf, delimiter='\t')
-	# line[0] query name, line[1] = reference name, line[2] = % match, line[10] = e-value, line[11] = bitscore
-		if args.score == 'justnorm':
+		# line[0] query name, line[1] = reference name, line[2] = % match, line[10] = e-value, line[11] = bitscore
+		if s_method == 'justnorm':
 			self_match_dict = defaultdict(dict)
 			for line in blast_tsv:
-				p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d+_orf\d+)')
-				m = p.search(line[0])
-				n = p.search(line[1])
+				m = line[0]
+				n = line[1]
 				# mref = m.group(1, 2)
 				# nref = n.group(1, 2)
-				cname = ''.join(m.group(1, 2, 3))
-				rname = ''.join(n.group(1, 2, 3))
 				# # print(mref)
 				bvalue = np.float(line[11])
-				if cname == rname:
+				if m == n:
 					self_match_dict[line[0]] = bvalue
-		elif args.score == 'bitscore':
+		elif s_method == 'bitscore':
 			self_match_dict = defaultdict(dict)
 			for line in blast_tsv:
-				p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d+_orf\d+)')
-				m = p.search(line[0])
-				n = p.search(line[1])
+				m = line[0]
+				n = line[1]
 				# mref = m.group(1, 2)
 				# nref = n.group(1, 2)
-				cname = ''.join(m.group(1, 2, 3))
-				rname = ''.join(n.group(1, 2, 3))
 				# # print(mref)
 				bvalue = np.float(line[11])
-				if cname == rname:
+				if m == n:
 					self_match_dict[line[0]] = bvalue
-				if bvalue > args.threshold:
+				if bvalue > t:
 					sparse_blast_id_dict[line[0]][line[1]] = bvalue
 		# TODO: use the evalue of perfect matches to normalize the data
-		elif args.score == 'evalue':
+		elif s_method == 'evalue':
 			for line in blast_tsv:
 				# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
 				# m = p.search(line[0])
@@ -80,9 +71,9 @@ def main():
 				# 	pass
 				# else:
 				evalue = np.float(line[10])
-				if evalue < args.threshold:
+				if evalue < t:
 					sparse_blast_id_dict[line[0]][line[1]] = evalue
-		elif args.score == 'pident':
+		elif s_method == 'pident':
 			for line in blast_tsv:
 				# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
 				# m = p.search(line[0])
@@ -95,8 +86,85 @@ def main():
 				# 	pass
 				# else:
 				ivalue = np.float(line[2])
-				if ivalue > args.threshold:
+				if ivalue > t:
 					sparse_blast_id_dict[line[0]][line[1]] = ivalue
+	return sparse_blast_id_dict
+
+def main():
+	parser = make_arg_parser()
+	args = parser.parse_args()
+	if args.genbank:
+		s_method = args.score
+		t = args.threshold
+		infile = args.input
+		sparse_blast_id_dict = ofu_tree_parsing(infile, s_method, t)
+	else:
+		sparse_blast_id_dict = defaultdict(dict)
+		with open(args.input) as blast_inf:
+				# next(blast_inf)
+			blast_tsv = csv.reader(blast_inf, delimiter='\t')
+		# line[0] query name, line[1] = reference name, line[2] = % match, line[10] = e-value, line[11] = bitscore
+			if args.score == 'justnorm':
+				self_match_dict = defaultdict(dict)
+				for line in blast_tsv:
+					p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d+_orf\d+)')
+					m = p.search(line[0])
+					n = p.search(line[1])
+					# mref = m.group(1, 2)
+					# nref = n.group(1, 2)
+					cname = ''.join(m.group(1, 2, 3))
+					rname = ''.join(n.group(1, 2, 3))
+					# # print(mref)
+					bvalue = np.float(line[11])
+					if cname == rname:
+						self_match_dict[line[0]] = bvalue
+			elif args.score == 'bitscore':
+				self_match_dict = defaultdict(dict)
+				for line in blast_tsv:
+					p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d+_orf\d+)')
+					m = p.search(line[0])
+					n = p.search(line[1])
+					# mref = m.group(1, 2)
+					# nref = n.group(1, 2)
+					cname = ''.join(m.group(1, 2, 3))
+					rname = ''.join(n.group(1, 2, 3))
+					# # print(mref)
+					bvalue = np.float(line[11])
+					if cname == rname:
+						self_match_dict[line[0]] = bvalue
+					if bvalue > args.threshold:
+						sparse_blast_id_dict[line[0]][line[1]] = bvalue
+			# TODO: use the evalue of perfect matches to normalize the data
+			elif args.score == 'evalue':
+				for line in blast_tsv:
+					# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
+					# m = p.search(line[0])
+					# n = p.search(line[1])
+					# mref = m.group(1)
+					# nref = n.group(1)
+					# cname = ''.join(m.group(1, 2, 3))
+					# rname = ''.join(n.group(1, 2, 3))
+					# if mref == nref:
+					# 	pass
+					# else:
+					evalue = np.float(line[10])
+					if evalue < args.threshold:
+						sparse_blast_id_dict[line[0]][line[1]] = evalue
+			elif args.score == 'pident':
+				for line in blast_tsv:
+					# p = re.compile(r'(\w+_[\w+\d+]*\.\d)(_\w+\d\d\d)(_ctg\d_orf\d+)')
+					# m = p.search(line[0])
+					# n = p.search(line[1])
+					# mref = m.group(1, 2)
+					# nref = n.group(1, 2)
+					# cname = ''.join(m.group(1, 2, 3))
+					# rname = ''.join(n.group(1, 2, 3))
+					# if mref == nref:
+					# 	pass
+					# else:
+					ivalue = np.float(line[2])
+					if ivalue > args.threshold:
+						sparse_blast_id_dict[line[0]][line[1]] = ivalue
 
 	if args.score == 'justnorm':
 		with open(args.spread, 'r') as inf:

@@ -19,7 +19,7 @@ def make_arg_parser():
 	parser.add_argument('-i', '--input', help='Directory in which to find all the cluster .gbk files', required=True)
 	parser.add_argument('-nt_cat', help='The nucleotide_catalog tsv file matching Genbank accessions to NCBI taxon IDs', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output files (default = new dir in cwd)', required=False, default='.')
-	parser.add_argument('-c', '--no_compile', help='Do not compile all the cluster files and DNA files into single .mpfa and .fna files',
+	parser.add_argument('--no_compile', help='Do not compile all the cluster files and DNA files into single .mpfa and .fna files',
 						action='store_true', required=False, default=False)
 	return parser
 

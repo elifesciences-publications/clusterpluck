@@ -100,16 +100,18 @@ def main():
 	print('Finished compiling OFU DNA sequences... Now picking representative sequences...\n')
 	inpath = os.path.join(outpath, tempdir)
 	to_align_out = rep_seqs(inpath, cut_h)
-	print('Running alignment with MUSCLE...\n')
 	alignfile = ''.join(['OFU_alignment_id', cut_h, '.fa'])
 	aligned = os.path.join(outpath, alignfile)
 	alignment_log = os.path.join(outpath, tempdir, ''.join(['OFU_alignment_id', cut_h, 'log.log']))
 	if args.aligner == 'muscle':
+		print('Running alignment with MUSCLE...\n')
 		os.system(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log, '-maxiters 2', '-diags1']))
 		# DEBUG
 		# print(' '.join(['muscle', '-in', to_align_out, '-out', aligned, '-log', alignment_log]))
 	if args.aligner == 'clustalo':
-		os.system(' '.join(['clustalo', '-i', to_align_out, '-t DNA', '-o', aligned, '--outfmt=fasta', '-l', alignment_log, '--iterations 3', '--threads=%d' % cpus]))
+		print('Running alignment with Clustal Omega...\n')
+		os.system(' '.join(['clustalo', '-i', to_align_out, '-t DNA', '-o', aligned, '--outfmt=fasta', '-l', alignment_log, '-v', '--iterations 1', '--threads=%d' % cpus]))
+		# print(' '.join(['clustalo', '-i', to_align_out, '-t DNA', '-o', aligned, '--outfmt=fasta', '-l', alignment_log, '--iterations 1', '--threads=%d' % cpus]))
 	if alignfile not in os.listdir(outpath):
 		print('\nAlignment failed... exiting now.\n')
 		sys.exit()
