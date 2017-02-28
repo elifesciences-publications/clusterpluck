@@ -179,7 +179,7 @@ def compile_files(outpath):
 				fasta_gen = FASTA(aa_in)
 				for header, sequence in fasta_gen.read():
 					aa_outfile.write('>' + header + '\n')
-					aa_outfile.write('>' + sequence + '\n')
+					aa_outfile.write(sequence + '\n')
 	aa_outfile.close()
 	with open(dna_seqs, 'w') as dna_outfile:
 		for dnafile in os.listdir(os.path.join(outpath, 'antismash_db_dna_seqs')):
@@ -188,7 +188,7 @@ def compile_files(outpath):
 				fasta_gen = FASTA(dna_in)
 				for header, sequence in fasta_gen.read():
 					dna_outfile.write('>' + header + '\n')
-					dna_outfile.write('>' + sequence + '\n')
+					dna_outfile.write(sequence + '\n')
 	dna_outfile.close()
 	return None
 
