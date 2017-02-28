@@ -17,10 +17,12 @@ from ninja_utils.parsers import FASTA
 # The arg parser
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Description here')
-	parser.add_argument('-i', '--input', help='Directory in which to find all the cluster .gbk files', required=True)
+	parser.add_argument('-i', '--input', help='Directory in which to find all the cluster .gbk files (default = cwd)', required=False, default='.')
 	parser.add_argument('-nt_cat', help='The nucleotide_catalog tsv file matching Genbank accessions to NCBI taxon IDs', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output files (default = new dir in cwd)', required=False, default='.')
 	parser.add_argument('--no_compile', help='Do not compile all the cluster files and DNA files into single .mpfa and .fna files',
+						action='store_true', required=False, default=False)
+	parser.add_argument('--just_compile', help='Only run the compilation step - specify the output locations with -o flag.',
 						action='store_true', required=False, default=False)
 	return parser
 
@@ -203,6 +205,9 @@ def main():
 	nt_cat = os.path.join(args.nt_cat)
 	gbkpath = os.path.join(args.input)
 	outpath = os.path.join(args.output)
+	if args.just_compile:
+		compile_files(outpath)
+		sys.exit()
 	if not os.path.isdir(outpath):
 		os.mkdir(os.path.join(outpath))
 		if not os.path.isdir(outpath):
