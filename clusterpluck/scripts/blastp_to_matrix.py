@@ -24,6 +24,7 @@ def make_arg_parser():
 	parser.add_argument('-o', '--output', help='Where to put the output (CSV or h5)', required=False, type=str, default='blastp_matrixform.csv')
 	parser.add_argument('-n', '--normalize', help='Normalize bitscore to score of self-self for each cluster (as 100).', action='store_true', required=False, default=False)
 	parser.add_argument('-r', '--spread', help='The spread matrix from R', required=False)
+	parser.add_argument('--genbank', help='If the result uses genbank IDs not refseq', action='store_true', required=False, default=False)
 	return parser
 
 
@@ -89,6 +90,7 @@ def ofu_tree_parsing(infile, s_method, t):
 				if ivalue > t:
 					sparse_blast_id_dict[line[0]][line[1]] = ivalue
 	return sparse_blast_id_dict
+
 
 def main():
 	parser = make_arg_parser()
