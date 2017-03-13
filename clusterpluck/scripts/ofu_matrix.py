@@ -80,6 +80,8 @@ def main():
 		else:
 			with open(args.input, 'r') as inf2:
 				df = cluster_ofus(inf2, dd)
+		j = 0
+		k = 0
 		if args.annotate:
 			# Preload the Database and Tree
 			db = RefSeqDatabase()
@@ -88,10 +90,18 @@ def main():
 			refseq_list = list(df.index)
 			for refseq_id in refseq_list:
 				if refseq_id.startswith('ncbi_tid'):
-					ncbi_tid = int(refseq_id.split('|')[1])
-					organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
-					if ncbi_tid == organism or organism.startswith('k__;p__;'):
-						strain_label.append(''.join(refseq_id.split('_')[0:2]))
+					ncbi_tid = refseq_id.split('|')[1]
+					if ncbi_tid == 'na':
+						genbank = '|'.join(refseq_id.split('_')[1].split('|')[2:4])
+						j += 1
+					else:
+						ncbi_tid = int(ncbi_tid)
+						organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
+					if organism == 'k__;p__;c__;o__;f__;g__;s__;t__' and ncbi_tid != 'na':
+						strain_label.append('|'.join(['ncbi_tid', str(ncbi_tid)]))
+						k += 1
+					elif ncbi_tid == 'na':
+						strain_label.append(genbank)
 					else:
 						strain_label.append(organism)
 				else:
@@ -120,6 +130,12 @@ def main():
 							# strain = strain.strip('t__')
 							strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, strain))
 			df.index = strain_label
+			if j > 0 or k > 0:
+				print('Note: Organism information was not obtained for all clusters:\n')
+				if j > 0:
+					print('%s had no NCBI tid...\n' % j)
+				if k > 0:
+					print('%s did not match a full named taxonomy annotation\n' % k)
 		else:
 			pass
 
