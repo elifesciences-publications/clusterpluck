@@ -23,7 +23,7 @@ def make_arg_parser():
 	parser.add_argument('-x', '--taxonomy', help='Annotate the OFU table with full taxonomy (all ranks)', action='store_true', default=False)
 	parser.add_argument('-n', '--ncbitid', help='Annotate the OFU table with just ncbi tid, for aligning with bowtie2 shogun output', action='store_true', default=False)
 	parser.add_argument('-c', '--clusterme', help='If a percent identity scores matrix is provided, this will also perform hierarchical clustering', action='store_true', required=False, default=False)
-	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree', required=False, default=70, type=float)
+	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree (0-100)', required=False, default=70, type=float)
 	return parser
 
 
@@ -87,30 +87,38 @@ def main():
 			strain_label = []
 			refseq_list = list(df.index)
 			for refseq_id in refseq_list:
-				organism = refseq_to_name(refseq_id, db=db, nt=nt)
-				ncbi_tid = refseq_to_tid(refseq_id, db=db)
-				ncbi_tid = str(ncbi_tid)
-				if args.taxonomy:
-					if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
-						strain_label.append(refseq_id)
+				if refseq_id.startswith('ncbi_tid'):
+					ncbi_tid = int(refseq_id.split('|')[1])
+					organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
+					if ncbi_tid == organism or organism.startswith('k__;p__;'):
+						strain_label.append(''.join(refseq_id.split('_')[0:2]))
 					else:
 						strain_label.append(organism)
-				elif args.ncbitid:
-					if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
-						strain_label.append(refseq_id)
-					else:
-						strain_label.append(ncbi_tid)
 				else:
-					if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
-						strain_label.append(refseq_id)
-					elif organism.endswith('None') or organism.endswith('t__'):
-						genus_species = organism.split(';')[-2]
-						# genus_species = genus_species.strip('s__')
-						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
+					organism = refseq_to_name(refseq_id, db=db, nt=nt)
+					ncbi_tid = refseq_to_tid(refseq_id, db=db)
+					ncbi_tid = str(ncbi_tid)
+					if args.taxonomy:
+						if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
+							strain_label.append(refseq_id)
+						else:
+							strain_label.append(organism)
+					elif args.ncbitid:
+						if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
+							strain_label.append(refseq_id)
+						else:
+							strain_label.append(ncbi_tid)
 					else:
-						strain = organism.split(';')[-1]
-						# strain = strain.strip('t__')
-						strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, strain))
+						if ncbi_tid == organism:  # sometimes DOJO can't look up the refseq accession; in this case, just return refseq.
+							strain_label.append(refseq_id)
+						elif organism.endswith('None') or organism.endswith('t__'):
+							genus_species = organism.split(';')[-2]
+							# genus_species = genus_species.strip('s__')
+							strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, genus_species))
+						else:
+							strain = organism.split(';')[-1]
+							# strain = strain.strip('t__')
+							strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, strain))
 			df.index = strain_label
 		else:
 			pass
