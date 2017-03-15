@@ -130,12 +130,13 @@ def main():
 							# strain = strain.strip('t__')
 							strain_label.append('ncbi_tid|%s|ref|%s|organism|%s' % (ncbi_tid, refseq_id, strain))
 			df.index = strain_label
+			df.sort_index(axis=0, inplace=True)
 			if j > 0 or k > 0:
 				print('Note: Organism information was not obtained for all clusters:\n')
 				if j > 0:
-					print('%s had no NCBI tid...\n' % j)
+					print('%s clusters had no NCBI tid...\n' % j)
 				if k > 0:
-					print('%s did not match a full named taxonomy annotation\n' % k)
+					print('%s clusters did not match a full named taxonomy annotation\n' % k)
 		else:
 			pass
 

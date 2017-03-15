@@ -2,6 +2,7 @@
 
 import argparse
 import pandas as pd
+import csv
 
 
 # The arg parser
@@ -25,14 +26,15 @@ def make_arg_parser():
 
 
 # Uses the taxon table to refine the OFU profile according to taxons that were actually found by SHOGUN
-def match_tables(intax, inofu, opt):
+def match_tables(ofu_infile, intax, ofu_index, opt):
 	tdf = pd.read_csv(intax, header=0, index_col=0)
-	odf = pd.read_csv(inofu, header=0, index_col=0)
+	# odf = pd.read_csv(inofu, header=0, index_col=0)
 	taxons = list(tdf.index)
-	ofu_index = list(odf.columns)
+	# ofu_index = list(odf.columns)
 	ofu_matched = pd.DataFrame(index=ofu_index)
 	for taxon in taxons:
 		n = []
+		t_odf = pd.DataFrame(columns=ofu_index)
 		taxon = str(taxon)
 		if taxon.endswith('None') or taxon.endswith('t__'):
 			name = taxon.split(';')[-2]
@@ -40,8 +42,20 @@ def match_tables(intax, inofu, opt):
 		else:
 			name = taxon.split(';')[-1]
 			# name = name.replace('t__', '')
-		t_odf = odf.filter(like=name, axis=0)
+		with open(ofu_infile, 'r') as inofu:
+			ofu_reader = csv.reader(inofu)
+			for line in ofu_reader:
+				# print(line[0])
+				# print(name)
+				if name in line[0]:
+					# print('a match!')
+					line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]])
+					t_odf = t_odf.append(line_df)
+				else:
+					pass
+		# t_odf = odf.filter(like=name, axis=0)
 		if t_odf.empty:
+			# print('none here')
 			pass
 		elif opt == 'average':  # If resolution isn't to strain, then average the OFU counts across the higher-rank group (i.e. species)
 			mean = pd.DataFrame(t_odf.mean(axis=0))
@@ -104,19 +118,25 @@ def main():
 	args = parser.parse_args()
 
 	# Parse command line
-	with open(args.taxons, 'r') as intax, open(args.ofus, 'r') as inofu:
-		opt = args.multiples
-		ofu_matched = match_tables(intax, inofu, opt)
-		if not args.no_profiles:
-			with open(args.profiles, 'w') as profile_out:
-				ofu_matched.to_csv(profile_out)
-		with open(args.taxons, 'r') as intaxm:
-			ofu_table = multiply_tables(intaxm, ofu_matched)
-			ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
-			print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
-		with open(args.output, 'w') as outf:
-			ofu_table = ofu_table.round(decimals=2)
-			ofu_table.to_csv(outf)
+	with open(args.taxons, 'r') as intaxon, open(args.ofus, 'r') as inofu:
+		tdf = pd.read_csv(intaxon, header=0, index_col=0, usecols=[0, 1, 2])
+		taxons = list(tdf.index)
+		odf = pd.read_csv(inofu, header=0, index_col=0, nrows=2)
+		ofu_index = list(odf.columns)
+	opt = args.multiples
+	with open(args.taxons, 'r') as intax:
+		ofu_infile = args.ofus
+		ofu_matched = match_tables(ofu_infile, intax, ofu_index, opt)
+	if not args.no_profiles:
+		with open(args.profiles, 'w') as profile_out:
+			ofu_matched.to_csv(profile_out)
+	with open(args.taxons, 'r') as intaxm:
+		ofu_table = multiply_tables(intaxm, ofu_matched)
+		ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
+		print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
+	with open(args.output, 'w') as outf:
+		ofu_table = ofu_table.round(decimals=2)
+		ofu_table.to_csv(outf)
 
 
 if __name__ == '__main__':
