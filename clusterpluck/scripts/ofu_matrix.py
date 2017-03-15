@@ -19,11 +19,12 @@ def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Generates an OFU profile key (genomes vs clustered OFUs) from clustered clusters')
 	parser.add_argument('-i', '--input', help='Input file: either a hierarchical cluster output CSV or a scores matrix CSV (if latter, include -c flag to perform clustering', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output csv; default to screen', required=False, default='-')
-	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_true', default=False)
-	parser.add_argument('-x', '--taxonomy', help='Annotate the OFU table with full taxonomy (all ranks)', action='store_true', default=False)
+	parser.add_argument('-a', '--annotate', help='Annotate the OFU table with full taxonomy (all ranks) - The default action', action='store_true', default=False)
+	parser.add_argument('-x', '--taxonomy', help='Annotate the OFU table with NCBI tid, RefSeq Accession, and organism name', action='store_false', default=True)
 	parser.add_argument('-n', '--ncbitid', help='Annotate the OFU table with just ncbi tid, for aligning with bowtie2 shogun output', action='store_true', default=False)
 	parser.add_argument('-c', '--clusterme', help='If a percent identity scores matrix is provided, this will also perform hierarchical clustering', action='store_true', required=False, default=False)
 	parser.add_argument('-t', '--height', help='If clustering, at what height to cut the tree (0-100)', required=False, default=70, type=float)
+	parser.add_argument('-m', '--method', help='What clustering method to use on the distance matrix: single, complete, average, weighted, centroid, median, ward.', required=False, default='complete')
 	return parser
 
 
@@ -60,11 +61,12 @@ def main():
 	args = parser.parse_args()
 
 	# Parse command line
+	method = args.method
 	height = 1 - (args.height / 100)
 	with open(args.input, 'r') as inf:
 		if args.clusterme:
 			print('...performing hierarchical clustering, tree cut at height of %s...\n' % args.height)
-			hclus = process_hierarchy(inf, h=height)
+			hclus = process_hierarchy(inf, height, method)
 		else:
 			hclus = pd.read_csv(inf, sep=',', header=0, index_col=0)
 		size = hclus.max(0)[0]  # get the total number of clustered OFUs (depends on height cut)
