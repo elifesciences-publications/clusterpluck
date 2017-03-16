@@ -60,9 +60,9 @@ def rep_cluster_pick(rep_ofu_file, args_list):
 	rep_file_path = os.path.join(temppath, rep_ofu_file)
 	temp_result_m = os.path.join(temppath, ''.join([rep_ofu_file.split('_filter')[0], '_matrix.csv']))
 	if quiet:
-		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(cpus), '> /dev/null']))
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(1), '> /dev/null']))
 	else:
-		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(cpus)]))
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(1)]))
 	rep_pick = pd.read_csv(temp_result_m, header=0, index_col=0)
 	if rep_pick.shape[0] == 1:
 		rep_pick = str(list(rep_pick.columns)[0])
