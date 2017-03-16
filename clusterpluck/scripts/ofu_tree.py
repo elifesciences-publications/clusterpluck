@@ -6,12 +6,11 @@ import os
 import shutil
 import pandas as pd
 from collections import defaultdict
+from itertools import repeat
+from multiprocessing import Pool
 from multiprocessing import cpu_count
 from clusterpluck.tools.h_clustering import process_hierarchy
-from clusterpluck.wrappers.run_makeblastdb import run_makeblastdb
-from clusterpluck.wrappers.run_blastp import run_blastp
-from ninja_utils.parsers import FASTA
-from clusterpluck.tools.suppress_print import suppress_stdout
+
 
 # The arg parser
 def make_arg_parser():
@@ -19,12 +18,15 @@ def make_arg_parser():
 		description='Builds a phylogenetic tree (using FastTree) from a representative OFU sequence '
 		'(default = longest) at a specified ID level')
 	parser.add_argument('-i', '--input',
-						help='Input file: A percent identity (pident) scores matrix of strain_cluster comparisons', required=True)
+						help='Input file: The blastp output file (b6 format)', required=True)
+	parser.add_argument('-s', '--scores',
+						help='Optional input file: The pre-processed (with clustersuck) scores matrix', required=False)
 	parser.add_argument('-t', '--height',
 						help='The similarity/identity level at which you want BGCs summarized within the tree (0-100)',
 						required=True, default=70)
-	parser.add_argument('-mpfa',
-						help='The protein fasta resource containing cluster amino acid sequences for this ClusterPluck database', required=True)
+	parser.add_argument('-m', '--method',
+						help='What clustering method to use on the distance matrix: single, complete, average, weighted, centroid, median, ward.',
+						required=False, default='average')
 	parser.add_argument('-o', '--output',
 						help='Directory in which to save the cluster information files (default = cwd)', required=False, default='.')
 	parser.add_argument('-no_cleanup',
@@ -33,6 +35,8 @@ def make_arg_parser():
 						help='Number of cpus to use - relevant for blastp and clusterparse steps', required=False)
 	parser.add_argument('-u', '--underscore',
 						help='For clusterparse, the underscore position (int) on which to define a cluster', required=False, default=4)
+	parser.add_argument('-quiet',
+						help='Do not print all clustersuck output to screen', action='store_true', required=False, default=False)
 	return parser
 
 
@@ -46,64 +50,55 @@ def ofu_dictionary(hclus):
 	print('\nPreparing to build tree for %d OFUs...\n' % num_ofus)
 	return bgc_dd, num_ofus
 
-#
-# def ofu_dnasequences(inf_d, bgc, ofu_name, dna_outf):
-# 	fasta_gen = FASTA(inf_d)
-# 	bgc = str(bgc)
-# 	for header, sequence in fasta_gen.read():
-# 		if '.cluster' in header:
-# 			header = header.replace('.cluster', '_cluster')
-# 		if bgc in header:
-# 			dna_outf.write(''.join(['>', ofu_name, ' ', header, '|SPLIT_HERE|']))
-# 			dna_outf.write(''.join([sequence, '\n']))
-# 	return dna_outf
+
+def rep_cluster_pick(rep_ofu_file, args_list):
+	in_b6 = args_list[0]
+	temppath = args_list[1]
+	quiet = args_list[2]
+	und = args_list[3]
+	cpus = args_list[4]
+	rep_file_path = os.path.join(temppath, rep_ofu_file)
+	temp_result_m = os.path.join(temppath, ''.join([rep_ofu_file.split('_filter')[0], '_matrix.csv']))
+	if quiet:
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(cpus), '> /dev/null']))
+	else:
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(cpus)]))
+	rep_pick = pd.read_csv(temp_result_m, header=0, index_col=0)
+	if rep_pick.shape[0] == 1:
+		rep_pick = str(list(rep_pick.columns)[0])
+	else:
+		rep_pick = rep_pick.sum(axis=0)
+		rep_pick = rep_pick.to_dict()
+		rep_pick = max(rep_pick, key=rep_pick.get)
+	os.remove(temp_result_m)
+	return rep_pick
 
 
-def compile_ofu_sequences(inf_m, bgc, ofu_name, aa_outf):
-	mpfa_gen = FASTA(inf_m)
-	bgc = str(bgc)
-	for header, sequence in mpfa_gen.read():
-		if '.cluster' in header:
-			header = header.replace('.cluster', '_cluster')
-		if bgc in header:
-			aa_outf.write(''.join(['>', ofu_name, '_', header, '\n']))
-			aa_outf.write(''.join([sequence, '\n']))
-	return aa_outf
-
-
-def rep_seqs(temppath, cut_h, outpath, tempdir, und, cpus):
-	#with suppress_stdout():
-	rep_setfile = os.path.join(temppath, ''.join(['repseqs_id', cut_h, '.mpfa']))
-	rep_set = open(rep_setfile, 'w')
-	for f in os.listdir(temppath):
-		if f.endswith('aasequences.mpfa'):
-			fp = os.path.join(temppath, f)
-			# print(f)
-			tempdb = ''.join([f.split('aaseq')[0], 'db'])
-			tempdbp = os.path.join(temppath, tempdb)
-			tempdbn = ''.join([tempdbp, '/tempdb'])
-			temp_result = os.path.join(temppath, ''.join(['blast', f.split('aaseq')[0], '.b6']))
-			temp_result_m = os.path.join(temppath, ''.join(['blast_mat_', f.split('aaseq')[0], '.csv']))
-			# os.system(' '.join(['makeblastdb -in', fp, '-hash_index', '-out', tempdbn, '-dbtype prot']))
-			run_makeblastdb(fp, tempdbn)
-			#os.system(' '.join(['blastp -query', fp, '-out', temp_result, '-db', tempdbn, '-max_hsps 1 -outfmt 6 -evalue 0.05 -num_threads', str(cpus)]))
-			run_blastp(fp, temp_result, tempdbn, cpus, evalue=0.05)
-			os.system(' '.join(['clusterparse', temp_result, temp_result_m, str(und), str(cpus)]))
-			rep_pick = pd.read_csv(temp_result_m, header=0, index_col=0)
-			if rep_pick.shape[0] == 1:
-				rep_pick = str(list(rep_pick.columns)[0])
-			else:
-				rep_pick = rep_pick.sum(axis=1)
-				rep_pick = rep_pick.to_dict()
-				rep_pick = max(rep_pick, key=rep_pick.get)
-			with open(fp, 'r') as ofu_mpfa:
-				mpfa_gen = FASTA(ofu_mpfa)
-				for header, sequence in mpfa_gen.read():
-					if rep_pick in header:
-						rep_set.write('>' + header + '\n')
-						rep_set.write(sequence + '\n')
-	rep_set.close()
-	return rep_setfile
+def relabeler(rep_matrix, bgc_dd):
+	rep_df = pd.read_csv(rep_matrix, header=0, index_col=0)
+	rep_df.sort_index(axis=0, inplace=True)
+	rep_df.sort_index(axis=1, inplace=True)
+	names = list(rep_df.columns)
+	# print(names[0:11])
+	ofu_nums = []
+	for n in names:
+		ofu_nums.extend([key for key, value in bgc_dd.items() if n in value])
+	ofu_ids = []
+	for ofu in ofu_nums:
+		ofu = int(ofu)
+		full_id = str('%05d' % ofu)
+		full_id = ''.join(['ofu', full_id])
+		ofu_ids.append(full_id)
+	# print(len(names))
+	# print(len(ofu_nums))
+	# print(len(ofu_ids))
+	# print(ofu_ids[1:10])
+	if not len(names) == len(ofu_ids):
+		print('Error renaming data with OFUs; check for duplicate entries in dataset')
+		sys.exit()
+	rep_df.columns = ofu_ids
+	rep_df.index = ofu_ids
+	return rep_df
 
 
 def main():
@@ -114,48 +109,63 @@ def main():
 		cpus = int(args.cpus)
 	else:
 		cpus = cpu_count()
+	method = args.method
+	in_b6 = args.input
 	und = args.underscore
 	outpath = args.output
 	cut_h = str(args.height)
 	h = float(args.height)
-	tempdir = ''.join(['temp_id', cut_h])
 	h = 1 - (h / 100)
+	tempdir = ''.join(['temp_id', cut_h])
+	temppath = os.path.join(outpath, tempdir)
 	if not os.path.isdir(outpath):
 		os.mkdir(outpath)
 		os.mkdir(os.path.join(outpath, tempdir))
 		if not os.path.isdir(outpath):
 			print('\nError creating output directory; check given path and try again\n')
 			sys.exit()
-	with open(args.input, 'r') as inf:
-		hclus = process_hierarchy(inf, h)
+	if args.scores:
+		with open(args.scores, 'r') as inf:
+			hclus = process_hierarchy(inf, h, method)
+	else:
+		full_mat = os.path.join(temppath, 'full_scores_matrix.csv')
+		os.system(' '.join(['clustersuck', in_b6, full_mat, str(und), 'NOFILTER', str(cpus)]))
+		with open(full_mat, 'r') as inf:
+			hclus = process_hierarchy(inf, h, method)
 	bgc_dd, num_ofus = ofu_dictionary(hclus)
 	for i in range(1, (num_ofus + 1)):
 		ofu_name = ''.join(['ofu', ('%05d' % i)])
 		ofu_digits = '%05d' % i
-		ofu_aaseqfile = ''.join([ofu_name, '_id', cut_h, '_aasequences.mpfa'])
-		aa_outf = open(os.path.join(outpath, tempdir, ofu_aaseqfile), 'w')
+		ofu_clusterfile = ''.join([ofu_name, '_id', cut_h, '_filter.txt'])
+		ofu_filter = open(os.path.join(temppath, ofu_clusterfile), 'w')
 		bgcs = bgc_dd[ofu_digits]
 		for bgc in bgcs:
-			with open(args.mpfa, 'r') as inf_m:
-				aa_outf = compile_ofu_sequences(inf_m, bgc, ofu_name, aa_outf)
-		aa_outf.close()
-	print('Finished compiling OFU DNA sequences... Now picking representative sequences...\n')
-	temppath = os.path.join(outpath, tempdir)
-	rep_setfile = rep_seqs(temppath, cut_h, outpath, tempdir, und, cpus)
-	repdb = ''.join(['repseq_blastdb'])
-	repdbp = os.path.join(outpath, tempdir, repdb)
-	repdbn = ''.join([repdbp, 'repdb'])
-	rep_result = os.path.join(outpath, tempdir, 'repseq_blast.b6')
-	rep_result_m = os.path.join(outpath, tempdir, 'repset_matrix.csv')
-	# with suppress_stdout():
-	os.system(' '.join(['makeblastdb -in', rep_setfile, '-hash_index', '-out', repdbn, '-dbtype prot']))
-	os.system(' '.join(['blastp -query', rep_setfile, '-out', rep_result, '-db', repdbn, '-max_hsps 1 -outfmt 6 -evalue 0.05 -num_threads', str(cpus)]))
-	os.system(' '.join(['clusterparse', rep_result, rep_result_m, str(und), str(cpus)]))
+			ofu_filter.write(bgc + '\n')
+		ofu_filter.close()
+	print('Finished compiling OFU clusters... Now picking best representatives...\n')
+	rep_clusters = os.path.join(temppath, 'rep_clusters_%s_id.txt' % cut_h)
+	ofu_rep_list = [f for f in os.listdir(temppath) if f.endswith('filter.txt')]
+	quiet = args.quiet
+	args_list = [in_b6, temppath, quiet, und, cpus]
+	with Pool(processes=cpus) as pool:
+		results = pool.starmap(rep_cluster_pick, zip(ofu_rep_list, repeat(args_list)))
+		pool.close()
+		pool.join()
+	with open(rep_clusters, 'w') as outf:
+		for item in results:
+			outf.write('%s\n' % item)
+	rep_result_m = os.path.join(temppath, 'repset_matrix.csv')
+	os.system(' '.join(['clustersuck', in_b6, rep_result_m, str(und), rep_clusters, str(cpus)]))
+	with open(rep_result_m, 'r') as rep_matrix:
+		rep_df = relabeler(rep_matrix, bgc_dd)
+	rep_ofu_result = os.path.join(temppath, 'ofu_repset_matrix.csv')
+	with open(rep_ofu_result, 'w') as ofu_outf:
+		rep_df.to_csv(rep_ofu_result)
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	# print(' '.join(['make_ofu_tree.R', rep_result_m, newick_tree]))
-	os.system(' '.join(['make_ofu_tree.R', rep_result_m, newick_tree]))
+	os.system(' '.join(['make_ofu_tree.R', rep_ofu_result, newick_tree, method]))
 	if not args.no_cleanup:
-		print('Alrighty, cleaning up temp files...\n')
+		print('\nAlrighty, cleaning up temp files...\n')
 		shutil.rmtree((os.path.join(outpath, tempdir)), ignore_errors=False, onerror=None)
 
 
