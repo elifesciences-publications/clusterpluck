@@ -56,13 +56,13 @@ def rep_cluster_pick(rep_ofu_file, args_list):
 	temppath = args_list[1]
 	quiet = args_list[2]
 	und = args_list[3]
-	cpus = args_list[4]
+	cpus_clus = args_list[4]
 	rep_file_path = os.path.join(temppath, rep_ofu_file)
 	temp_result_m = os.path.join(temppath, ''.join([rep_ofu_file.split('_filter')[0], '_matrix.csv']))
 	if quiet:
-		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(1), '> /dev/null']))
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(cpus_clus), '> /dev/null']))
 	else:
-		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(1)]))
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), rep_file_path, str(cpus_clus)]))
 	rep_pick = pd.read_csv(temp_result_m, header=0, index_col=0)
 	if rep_pick.shape[0] == 1:
 		rep_pick = str(list(rep_pick.columns)[0])
@@ -109,6 +109,9 @@ def main():
 		cpus = int(args.cpus)
 	else:
 		cpus = cpu_count()
+	if cpus > 8:
+		cpus_py = 4
+		cpus_clus = int((cpus - 4) / 4)
 	method = args.method
 	in_b6 = args.input
 	und = args.underscore
@@ -146,8 +149,8 @@ def main():
 	rep_clusters = os.path.join(temppath, 'rep_clusters_%s_id.txt' % cut_h)
 	ofu_rep_list = [f for f in os.listdir(temppath) if f.endswith('filter.txt')]
 	quiet = args.quiet
-	args_list = [in_b6, temppath, quiet, und, cpus]
-	with Pool(processes=cpus) as pool:
+	args_list = [in_b6, temppath, quiet, und, cpus_clus]
+	with Pool(processes=cpus_py) as pool:
 		results = pool.starmap(rep_cluster_pick, zip(ofu_rep_list, repeat(args_list)))
 		pool.close()
 		pool.join()
