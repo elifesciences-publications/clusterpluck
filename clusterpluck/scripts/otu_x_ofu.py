@@ -23,8 +23,11 @@ def make_arg_parser():
 
 
 # Uses the taxon table to refine the OFU profile according to taxons that were actually found by SHOGUN
-def match_tables(ofu_infile, intax, ofu_index, opt):
-	tdf = pd.read_csv(intax, header=0, index_col=0)
+def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
+	if taxon_file.endswith('.csv'):
+		tdf = pd.read_csv(intax, header=0, index_col=0)
+	if taxon_file.endswith('.txt'):
+		tdf = pd.read_csv(intax, sep='\t', header=0, index_col=0)
 	# odf = pd.read_csv(inofu, header=0, index_col=0)
 	taxons = list(tdf.index)
 	# ofu_index = list(odf.columns)
@@ -116,14 +119,18 @@ def main():
 
 	# Parse command line
 	with open(args.taxons, 'r') as intaxon, open(args.ofus, 'r') as inofu:
-		tdf = pd.read_csv(intaxon, header=0, index_col=0, usecols=[0, 1, 2])
+		taxon_file = args.taxons
+		if taxon_file.endswith('.csv'):
+			tdf = pd.read_csv(intaxon, header=0, index_col=0, usecols=[0, 1, 2])
+		if taxon_file.endswith('.txt'):
+			tdf = pd.read_csv(intaxon, sep='\t', header=0, index_col=0, usecols=[0, 1, 2])
 		taxons = list(tdf.index)
 		odf = pd.read_csv(inofu, header=0, index_col=0, nrows=2)
 		ofu_index = list(odf.columns)
 	opt = args.multiples
 	with open(args.taxons, 'r') as intax:
 		ofu_infile = args.ofus
-		ofu_matched = match_tables(ofu_infile, intax, ofu_index, opt)
+		ofu_matched = match_tables(taxon_file, ofu_infile, intax, ofu_index, opt)
 	if args.profiles:
 		profile_out = 'matching_ofu_profiles.csv'
 		with open(profile_out, 'w') as outf:
