@@ -112,6 +112,9 @@ def main():
 	if cpus > 8:
 		cpus_py = 4
 		cpus_clus = int((cpus - 4) / 4)
+	else:
+		cpus_py = cpus
+		cpus_clus = 1
 	method = args.method
 	in_b6 = args.input
 	und = args.underscore
@@ -123,10 +126,11 @@ def main():
 	temppath = os.path.join(outpath, tempdir)
 	if not os.path.isdir(outpath):
 		os.mkdir(outpath)
+	if not os.path.isdir(temppath):
 		os.mkdir(os.path.join(outpath, tempdir))
-		if not os.path.isdir(outpath):
-			print('\nError creating output directory; check given path and try again\n')
-			sys.exit()
+	if not os.path.isdir(outpath):
+		print('\nError creating output directory; check given path and try again\n')
+		sys.exit()
 	if args.scores:
 		with open(args.scores, 'r') as inf:
 			hclus = process_hierarchy(inf, h, method)
@@ -157,13 +161,13 @@ def main():
 	with open(rep_clusters, 'w') as outf:
 		for item in results:
 			outf.write('%s\n' % item)
-	rep_result_m = os.path.join(temppath, 'repset_matrix.csv')
+	rep_result_m = os.path.join(temppath, 'repset_matrix_%s.csv' % cut_h)
 	os.system(' '.join(['clustersuck', in_b6, rep_result_m, str(und), rep_clusters, str(cpus)]))
 	with open(rep_result_m, 'r') as rep_matrix:
 		rep_df = relabeler(rep_matrix, bgc_dd)
-	rep_ofu_result = os.path.join(temppath, 'ofu_repset_matrix.csv')
+	rep_ofu_result = os.path.join(outpath, 'ofu_repset_matrix.csv')
 	with open(rep_ofu_result, 'w') as ofu_outf:
-		rep_df.to_csv(rep_ofu_result)
+		rep_df.to_csv(ofu_outf)
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	# print(' '.join(['make_ofu_tree.R', rep_result_m, newick_tree]))
 	os.system(' '.join(['make_ofu_tree.R', rep_ofu_result, newick_tree, method]))
