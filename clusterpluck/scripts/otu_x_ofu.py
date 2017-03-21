@@ -22,7 +22,7 @@ def make_arg_parser():
 	return parser
 
 
-# Uses the taxon table to refine the OFU profile according to taxons that were actually found by SHOGUN
+# Uses the taxon table to refine the OFU profile according to taxons that were actually found
 def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 	if taxon_file.endswith('.csv'):
 		tdf = pd.read_csv(intax, header=0, index_col=0)
@@ -144,7 +144,13 @@ def main():
 		print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
 	with open(args.output, 'w') as outf:
 		ofu_table = ofu_table.round(decimals=2)
-		ofu_table.to_csv(outf)
+		# Make the OFU table a QIIME-compatible tsv
+		ofu_table.T
+		ofu_table.index.name = '#OFU ID'
+		if args.output.endswith('.csv'):
+			ofu_table.to_csv(outf)
+		else:
+			ofu_table.to_csv(outf, sep='\t')
 
 
 if __name__ == '__main__':
