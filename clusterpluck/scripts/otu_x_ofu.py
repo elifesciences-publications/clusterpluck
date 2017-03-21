@@ -37,10 +37,12 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 		t_odf = pd.DataFrame(columns=ofu_index)
 		taxon = str(taxon)
 		if taxon.endswith('None') or taxon.endswith('t__'):
-			name = taxon.split(';')[-2]
+			k = -2
+			name = taxon.split(';')[k]
 			# name = name.replace('s__', '')
 		else:
-			name = taxon.split(';')[-1]
+			k = -1
+			name = taxon.split(';')[k]
 			# name = name.replace('t__', '')
 		with open(ofu_infile, 'r') as inofu:
 			ofu_reader = csv.reader(inofu)
@@ -48,11 +50,23 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 				# print(line[0])
 				# print(name)
 				if name in line[0]:
-					# print('a match!')
+					print('a match!')
 					line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 					t_odf = t_odf.append(line_df)
-				else:
-					pass
+				elif 'c__' in taxon:
+					up_name = taxon.split(';')[k - 1]
+					if up_name in line[0]:
+						print('a second order match!')
+						line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
+						t_odf = t_odf.append(line_df)
+					elif 'o__' in taxon:
+						up2_name = taxon.split(';')[k - 2]
+						if up2_name in line[0]:
+							print('a third order match!')
+							line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
+							t_odf = t_odf.append(line_df)
+						else:
+							pass
 		# t_odf = odf.filter(like=name, axis=0)
 		if t_odf.empty:
 			# print('none here')
