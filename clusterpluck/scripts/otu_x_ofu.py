@@ -93,8 +93,11 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 
 
 # Use the relative abundances to create OFU table with 'abundance' of each OFU trait
-def multiply_tables(intaxm, ofu_matched):
-	tdf = pd.read_csv(intaxm, header=0, index_col=0)
+def multiply_tables(taxon_file, intaxm, ofu_matched):
+	if taxon_file.endswith('.csv'):
+		tdf = pd.read_csv(intaxm, header=0, index_col=0)
+	if taxon_file.endswith('.txt'):
+		tdf = pd.read_csv(intaxm, sep='\t', header=0, index_col=0)
 	tdf = tdf.fillna(0)
 	ofu_list = list(ofu_matched.index)
 	if not tdf.shape[0] == ofu_matched.shape[0]:
@@ -136,7 +139,7 @@ def main():
 		with open(profile_out, 'w') as outf:
 			ofu_matched.to_csv(outf)
 	with open(args.taxons, 'r') as intaxm:
-		ofu_table = multiply_tables(intaxm, ofu_matched)
+		ofu_table = multiply_tables(taxon_file, intaxm, ofu_matched)
 		ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
 		print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
 	with open(args.output, 'w') as outf:
