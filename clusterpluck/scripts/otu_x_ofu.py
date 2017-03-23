@@ -3,7 +3,7 @@
 import argparse
 import pandas as pd
 import csv
-
+import os
 
 # The arg parser
 def make_arg_parser():
@@ -19,6 +19,7 @@ def make_arg_parser():
 	parser.add_argument('-p', '--profiles',
 						help='Save the matching OFU profiles csv as "matching_ofu_profiles.csv" in current working directory',
 						action='store_true', required=False, default=False)
+	parser.add_argument('--biom', help='Also convert the final OFU table to biom format, compatible with QIIME, etc. Output must end with ".txt".', action='store_true', required=False, default=False)
 	return parser
 
 
@@ -32,11 +33,15 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 	taxons = list(tdf.index)
 	# ofu_index = list(odf.columns)
 	ofu_matched = pd.DataFrame(index=ofu_index)
+	# TODO: Parallelize the taxon parsing?
 	for taxon in taxons:
+		if len(taxon.split(';')) < 3:
+			pass
+		# print(taxon)
 		n = []
 		t_odf = pd.DataFrame(columns=ofu_index)
 		taxon = str(taxon)
-		if taxon.endswith('None') or taxon.endswith('t__'):
+		if taxon.endswith('None') or taxon.endswith('__'):
 			k = -2
 			name = taxon.split(';')[k]
 			# name = name.replace('s__', '')
@@ -45,31 +50,63 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 			name = taxon.split(';')[k]
 			# name = name.replace('t__', '')
 		with open(ofu_infile, 'r') as inofu:
+			# print(k, name)
 			ofu_reader = csv.reader(inofu)
 			for line in ofu_reader:
 				# print(line[0])
 				# print(name)
 				if name in line[0]:
-					print('a match!')
+					# print('a match!')
 					line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 					t_odf = t_odf.append(line_df)
-				elif 'c__' in taxon:
-					up_name = taxon.split(';')[k - 1]
-					if up_name in line[0]:
-						print('a second order match!')
-						line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
-						t_odf = t_odf.append(line_df)
-					elif 'o__' in taxon:
-						up2_name = taxon.split(';')[k - 2]
-						if up2_name in line[0]:
+				else:
+					pass
+			if t_odf.empty and len(taxon.split(';')) >= 4:
+				up_name = taxon.split(';')[k - 1]
+				# print(k, up_name, 'up one')
+				with open(ofu_infile, 'r') as inofu:
+					ofu_reader = csv.reader(inofu)
+					for line in ofu_reader:
+						if up_name in line[0]:
+							# print('a second order match!')
+							line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
+							t_odf = t_odf.append(line_df)
+						else:
+							pass
+			if t_odf.empty and len(taxon.split(';')) >= 5:
+				up_name = taxon.split(';')[k - 2]
+				if 'k__' or 'p__' in up_name:
+					pass
+				# print(k, up_name, 'up two')
+				with open(ofu_infile, 'r') as inofu:
+					ofu_reader = csv.reader(inofu)
+					for line in ofu_reader:
+						if up_name in line[0]:
 							print('a third order match!')
 							line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 							t_odf = t_odf.append(line_df)
 						else:
 							pass
+			if t_odf.empty and len(taxon.split(';')) >= 6:
+				up_name = taxon.split(';')[k - 3]
+				if 'k__' or 'p__' in up_name:
+					pass
+				# print(k, up_name, 'up three')
+				with open(ofu_infile, 'r') as inofu:
+					ofu_reader = csv.reader(inofu)
+					for line in ofu_reader:
+						if up_name in line[0]:
+							print('a fourth order match!')
+							line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
+							t_odf = t_odf.append(line_df)
+						else:
+							pass
+
 		# t_odf = odf.filter(like=name, axis=0)
 		if t_odf.empty:
 			# print('none here')
+			pass
+		elif sum(t_odf.sum()) == 0:
 			pass
 		elif opt == 'average':  # If resolution isn't to strain, then average the OFU counts across the higher-rank group (i.e. species)
 			mean = pd.DataFrame(t_odf.mean(axis=0))
@@ -148,6 +185,7 @@ def main():
 	with open(args.taxons, 'r') as intax:
 		ofu_infile = args.ofus
 		ofu_matched = match_tables(taxon_file, ofu_infile, intax, ofu_index, opt)
+	print('Finished matching OFUs from organisms in taxon table... now multiplying for abundance...\n')
 	if args.profiles:
 		profile_out = 'matching_ofu_profiles.csv'
 		with open(profile_out, 'w') as outf:
@@ -165,6 +203,11 @@ def main():
 			ofu_table.to_csv(outf)
 		else:
 			ofu_table.to_csv(outf, sep='\t')
+	if args.biom and args.output.endswith('.txt'):
+		print('Saving biom format file...\n')
+		biom_out = '.'.join([args.output.split('.')[-2], 'biom'])
+		# print(' '.join(['biom convert -i', args.output, '-o', biom_out, '--table-type="OTU table" --to-json']))
+		os.system(' '.join(['biom convert -i', args.output, '-o', biom_out, '--table-type="OTU table" --to-json']))
 
 
 if __name__ == '__main__':

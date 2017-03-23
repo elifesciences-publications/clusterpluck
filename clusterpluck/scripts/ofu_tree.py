@@ -32,9 +32,9 @@ def make_arg_parser():
 	parser.add_argument('-no_cleanup',
 						help='Keep all intermediate temp and log files', action='store_true', required=False, default=False)
 	parser.add_argument('-p', '--cpus',
-						help='Number of cpus to use - relevant for blastp and clusterparse steps', required=False)
+						help='Number of cpus to use', required=False)
 	parser.add_argument('-u', '--underscore',
-						help='For clusterparse, the underscore position (int) on which to define a cluster', required=False, default=4)
+						help='For clustersuck, the underscore position (integer) on which to define a cluster', required=False, default=4)
 	parser.add_argument('-quiet',
 						help='Do not print all clustersuck output to screen', action='store_true', required=False, default=False)
 	return parser
