@@ -35,6 +35,7 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt):
 	ofu_matched = pd.DataFrame(index=ofu_index)
 	# TODO: Parallelize the taxon parsing?
 	for taxon in taxons:
+		taxon = str(taxon)
 		if len(taxon.split(';')) < 3:
 			pass
 		# print(taxon)
