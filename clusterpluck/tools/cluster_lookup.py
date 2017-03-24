@@ -30,6 +30,8 @@ def make_arg_parser():
 	parser.add_argument('-c', '--ofu', help='Comma-separated list of the ofus (e.g. ofu00001,ofu00003) on which to provide information', required=False, type=str)
 	parser.add_argument('-n', '--name', help='Comma-separated list of the RefSeq IDs (with or without cluster number) for which to provide a list of OFUs', required=False, type=str)
 	parser.add_argument('-y', '--types', help='A CSV file containing the predicted product types for each cluster', required=False)
+	parser.add_argument('--method', help='The clustering linkage method to use (default = average)',
+						required=False, default='average')
 	return parser
 
 
@@ -150,6 +152,7 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	outpath = args.output
+	method = args.method
 	if not os.path.isdir(outpath):
 		os.mkdir(outpath)
 		if not os.path.isdir(outpath):
@@ -157,7 +160,7 @@ def main():
 			sys.exit()
 	with open(args.scores, 'r') as inf:
 		h = 1 - (args.height / 100)
-		hclus = process_hierarchy(inf, h)
+		hclus = process_hierarchy(inf, h, method)
 	if args.types:
 		with open(args.types, 'r') as in_t:
 			typetable = pd.read_csv(in_t, header=0, index_col=0)
