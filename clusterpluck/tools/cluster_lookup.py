@@ -55,8 +55,12 @@ def list_organisms(ofus, hclus, typetable, outpath, cut_h):
 		name_dict = defaultdict(list)
 		with suppress_stdout():
 			for bgc in bgcs:
-				refseqid = '_'.join(bgc.split('_')[:2])
-				name = refseq_to_name(refseqid, db=db, nt=nt)
+				if bgc.startswith('ncbi_tid'):
+					ncbi_tid = int(bgc.split('|')[1])
+					name = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
+				else:
+					refseqid = '_'.join(bgc.split('_')[:2])
+					name = refseq_to_name(refseqid, db=db, nt=nt)
 				if typetable is not False:
 					ctype = typetable.filter(like=bgc, axis=0)
 					ctype = str(ctype.iloc[0, 0])
