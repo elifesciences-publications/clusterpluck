@@ -37,13 +37,12 @@ def match_tables(taxon_file, ofu_infile, intax, ofu_index, opt, cpus):
 	taxons = list(tdf.index)
 	# ofu_index = list(odf.columns)
 	# ofu_matched = pd.DataFrame(index=ofu_index)
-	# TODO: Parallelize the taxon parsing?
 	args_list = [ofu_index, ofu_infile, opt]
 	with Pool(processes=cpus) as pool:
 		results = pool.starmap(parallel_taxon_match, zip(taxons, repeat(args_list)))
 		pool.close()
 		pool.join()
-		ofu_matched = pd.concat(results, axis=1, join='outer')  # stack all the results into a single column in a dataframe
+		ofu_matched = pd.concat(results, axis=1, join='outer')  # join all the results into a single dataframe
 	ofu_matched = ofu_matched.T  # This orients the dataframe in the same way as a taxon table
 	return ofu_matched
 
@@ -167,13 +166,15 @@ def multiply_tables(taxon_file, intaxm, ofu_matched):
 	if taxon_file.endswith('.txt'):
 		tdf = pd.read_csv(intaxm, sep='\t', header=0, index_col=0)
 	tdf = tdf.fillna(0)
-	ofu_list = list(ofu_matched.index)
+	ofu_taxon_list = list(ofu_matched.index)
 	if not tdf.shape[0] == ofu_matched.shape[0]:
 		print('\nFYI, some taxa did not end up in the ofu profile...')
 		print('taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
 		print('ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1])
 		print('\nUsing OFU index to limit to common taxa...\n')
-		tdf = tdf.loc[ofu_list]
+		otu_taxon_set = set(tdf.index)
+		ofu_taxon_list = [t for t in ofu_taxon_list if t in otu_taxon_set]
+		tdf = tdf.loc[ofu_taxon_list]
 	print('Final taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
 	# print('Final ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1], '\n')
 	ofu_table = tdf.T.dot(ofu_matched)  # taking the dot product in this direction gives the relative abundance of OFUs based on observations of the taxon
