@@ -175,13 +175,14 @@ def multiply_tables(taxon_file, intaxm, ofu_matched):
 		otu_taxon_set = set(tdf.index)
 		ofu_taxon_list = [t for t in ofu_taxon_list if t in otu_taxon_set]
 		tdf = tdf.loc[ofu_taxon_list]
+		ofu_matched = ofu_matched.loc[ofu_taxon_list]
 	print('Final taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
 	# print('Final ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1], '\n')
-	ofu_table = tdf.T.dot(ofu_matched)  # taking the dot product in this direction gives the relative abundance of OFUs based on observations of the taxon
-	if ofu_table.empty:
-		print('\nError multiplying matrices. Check dimensions.\n')
+	if tdf.shape[0] != ofu_matched.shape[0]:
+		print('\nMatrix dimensions not compatible. Check taxon tables and ofu tables for duplicates. \n')
 		exit()
 	else:
+		ofu_table = tdf.T.dot(ofu_matched)  # taking the dot product in this direction gives the relative abundance of OFUs based on observations of the taxon
 		return ofu_table
 
 
@@ -219,7 +220,7 @@ def main():
 	with open(args.output, 'w') as outf:
 		ofu_table = ofu_table.round(decimals=2)
 		# Make the OFU table a QIIME-compatible tsv
-		ofu_table.T
+		ofu_table = ofu_table.T
 		ofu_table.index.name = '#OFU ID'
 		if args.output.endswith('.csv'):
 			ofu_table.to_csv(outf)
