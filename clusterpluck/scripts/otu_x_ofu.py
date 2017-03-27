@@ -53,7 +53,7 @@ def parallel_taxon_match(taxon, args_list):
 	opt = args_list[2]
 	taxon = str(taxon)
 	if len(taxon.split(';')) < 3:
-		pass
+		return None
 	# print(taxon)
 	n = []
 	t_odf = pd.DataFrame(columns=ofu_index)
