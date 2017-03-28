@@ -172,7 +172,7 @@ def parallel_strain_match(taxon, args_list):
 	if 's__' not in taxon or 't__' not in taxon or taxon.endswith('s__;t__') or taxon.endswith('s__;t__None'):
 		print('not strain!')
 		return None
-	print(taxon)
+	# print(taxon)
 	n = []
 	t_odf = pd.DataFrame(columns=ofu_index)
 	taxon = str(taxon)
@@ -183,7 +183,7 @@ def parallel_strain_match(taxon, args_list):
 		k = -1
 		name = taxon.split(';')[k]
 	with open(ofu_infile, 'r') as inofu:
-		print(k, name)
+		# print(k, name)
 		ofu_reader = csv.reader(inofu)
 		for line in ofu_reader:
 			# print(line[0])
