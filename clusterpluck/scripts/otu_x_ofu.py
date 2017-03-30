@@ -170,7 +170,7 @@ def parallel_strain_match(taxon, args_list):
 	opt = args_list[2]
 	taxon = str(taxon)
 	if 's__' not in taxon or 't__' not in taxon or taxon.endswith('s__;t__') or taxon.endswith('s__;t__None'):
-		print('not strain!')
+		# print('not strain!')
 		return None
 	# print(taxon)
 	n = []
