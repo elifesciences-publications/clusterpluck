@@ -25,6 +25,7 @@ def make_arg_parser():
 	parser.add_argument('--strain', help='Only match at strain level, or species if strain not presented in taxon table', action='store_true', required=False, default=False)
 	parser.add_argument('--biom', help='Also convert the final OFU table to biom format, compatible with QIIME, etc. Output must end with ".txt".', action='store_true', required=False, default=False)
 	parser.add_argument('-c', '--cpus', help='Number of processors to use', required=False)
+	parser.add_argument('-r', '--round', help='Number of decimals to keep in final output', required=False, default=2)
 	return parser
 
 
@@ -291,7 +292,7 @@ def main():
 		ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
 		print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
 	with open(args.output, 'w') as outf:
-		ofu_table = ofu_table.round(decimals=2)
+		ofu_table = ofu_table.round(decimals=int(args.round))
 		# Make the OFU table a QIIME-compatible tsv
 		ofu_table = ofu_table.T
 		ofu_table.index.name = '#OFU ID'
