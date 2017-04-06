@@ -13,7 +13,7 @@ def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Generates an OFU table based on taxon abundance and OFU profile of those species')
 	parser.add_argument('-t', '--taxons', help='The taxon table in CSV', required=True)
 	parser.add_argument('-f', '--ofus', help='The OFU profile at a particular cut height, in CSV', required=True)
-	parser.add_argument('-o', '--output', help='Where to save the output csv; default to "ofu_table.csv" in current working directory', required=False, default='ofu_table.csv')
+	parser.add_argument('-o', '--output', help='Where to save the output OFU table; default to "ofu_table.csv" in current working directory', required=False, default='ofu_table.csv')
 	parser.add_argument('-m', '--multiples', help='When multiple strains for species-level match: '
 												'[average] the OFU tallies,'
 												'[summarize] all the possible OFUs,'
