@@ -20,19 +20,19 @@ def make_arg_parser():
 						help='Number of cpus to use', required=False)
 	parser.add_argument('-u', '--underscore',
 						help='For clustersuck, the underscore position (integer) on which to define a cluster', required=False, default=3)
-	parser.add_argument('-q', '--quiet',
-						help='Do not print all clustersuck output to screen', action='store_true', required=False, default=True)
+	parser.add_argument('-v', '--verbose',
+						help='Do not print all clustersuck output to screen', action='store_true', required=False, default=False)
 	parser.add_argument('-o', '--output',
 						help='Output txt file, otherwise write to screen', required=False, default='-')
 	return parser
 
 
-def rep_cluster_pick(in_b6, und, cpus, quiet):
+def rep_cluster_pick(in_b6, und, cpus, verbose):
 	temp_result_m = os.path.join('temp_matrix.csv')
-	if quiet:
-		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), 'tempfilter.txt', str(cpus), '> /dev/null']))
-	else:
+	if verbose:
 		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), 'tempfilter.txt', str(cpus)]))
+	else:
+		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), 'tempfilter.txt', str(cpus), '> /dev/null']))
 	rep_pick = pd.read_csv(temp_result_m, header=0, index_col=0)
 	if rep_pick.shape[0] == 1:
 		rep_pick = str(list(rep_pick.columns)[0])
@@ -48,7 +48,7 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	# Parse command line
-	quiet = args.quiet
+	verbose = args.verbose
 	und = args.underscore
 	if args.cpus:
 		cpus = int(args.cpus)
@@ -61,7 +61,7 @@ def main():
 	with open('tempfilter.txt', 'w') as tempfilt:
 		for n in cluster_filter:
 			tempfilt.write(n + '\n')
-	rep_pick = str(rep_cluster_pick(in_b6, und, cpus, quiet))
+	rep_pick = str(rep_cluster_pick(in_b6, und, cpus, verbose))
 	os.remove('tempfilter.txt')
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
 		outf.write(rep_pick)
