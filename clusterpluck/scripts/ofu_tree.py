@@ -109,6 +109,7 @@ def main():
 		cpus = int(args.cpus)
 	else:
 		cpus = cpu_count()
+	# Split the cpus rationally among the processes. At higher cpu numbers, ultimately I/O will reign.
 	if cpus > 8:
 		cpus_py = 4
 		cpus_clus = int((cpus - 4) / 4)
@@ -122,6 +123,7 @@ def main():
 	cut_h = str(args.height)
 	h = float(args.height)
 	h = 1 - (h / 100)
+	# Make a temp location to store all the intermediate files
 	tempdir = ''.join(['temp_id', cut_h])
 	temppath = os.path.join(outpath, tempdir)
 	if not os.path.isdir(outpath):
@@ -134,9 +136,11 @@ def main():
 	if args.scores:
 		with open(args.scores, 'r') as inf:
 			hclus = process_hierarchy(inf, h, method)
+	# Make the scores matrix from blast result if none provided
 	else:
 		full_mat = os.path.join(temppath, 'full_scores_matrix.csv')
 		os.system(' '.join(['clustersuck', in_b6, full_mat, str(und), 'NOFILTER', str(cpus)]))
+		# Run hclus on the scores matrix, generating the OFUs themselves
 		with open(full_mat, 'r') as inf:
 			hclus = process_hierarchy(inf, h, method)
 	bgc_dd, num_ofus = ofu_dictionary(hclus)
@@ -154,6 +158,7 @@ def main():
 	ofu_rep_list = [f for f in os.listdir(temppath) if f.endswith('filter.txt')]
 	quiet = args.quiet
 	args_list = [in_b6, temppath, quiet, und, cpus_clus]
+	# Run the representative cluster function in parallel
 	with Pool(processes=cpus_py) as pool:
 		results = pool.starmap(rep_cluster_pick, zip(ofu_rep_list, repeat(args_list)))
 		pool.close()
@@ -162,6 +167,7 @@ def main():
 		for item in results:
 			outf.write('%s\n' % item)
 	rep_result_m = os.path.join(temppath, 'repset_matrix_%s.csv' % cut_h)
+	# Run clustersuck on the representative clusters, to generate the representative scores matrix at chosen height
 	os.system(' '.join(['clustersuck', in_b6, rep_result_m, str(und), rep_clusters, str(cpus)]))
 	with open(rep_result_m, 'r') as rep_matrix:
 		rep_df = relabeler(rep_matrix, bgc_dd)
@@ -170,6 +176,7 @@ def main():
 		rep_df.to_csv(ofu_outf)
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	# print(' '.join(['make_ofu_tree.R', rep_result_m, newick_tree]))
+	# Make the tree with R from the representative cluster scores matrix
 	os.system(' '.join(['make_ofu_tree.R', rep_ofu_result, newick_tree, method]))
 	if not args.no_cleanup:
 		print('\nAlrighty, cleaning up temp files...\n')
