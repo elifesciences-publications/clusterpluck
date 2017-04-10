@@ -42,6 +42,7 @@ setup(
 		'ofu_matrix = clusterpluck.scripts.ofu_matrix:main',
 		'otu_x_ofu = clusterpluck.scripts.otu_x_ofu:main',
 		'cluster_lookup = clusterpluck.tools.cluster_lookup:main',
+		'rep_cluster = clusterpluck.tools.rep_cluster:main',
 		'build_ofu_tree = clusterpluck.scripts.build_ofu_tree:main',
 		'ofu_tree = clusterpluck.scripts.ofu_tree:main',
 		'shofun = clusterpluck.wrappers.shofun:main',
