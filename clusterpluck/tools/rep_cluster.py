@@ -30,9 +30,11 @@ def make_arg_parser():
 def rep_cluster_pick(in_b6, und, cpus, verbose):
 	temp_result_m = os.path.join('temp_matrix.csv')
 	if verbose:
+		print(' '.join(['clustersuck', in_b6, temp_result_m, str(und), 'tempfilter.txt', str(cpus)]))
 		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), 'tempfilter.txt', str(cpus)]))
 	else:
 		os.system(' '.join(['clustersuck', in_b6, temp_result_m, str(und), 'tempfilter.txt', str(cpus), '> /dev/null']))
+	print('done with clustersuck')
 	rep_pick = pd.read_csv(temp_result_m, header=0, index_col=0)
 	if rep_pick.shape[0] == 1:
 		rep_pick = str(list(rep_pick.columns)[0])
@@ -40,6 +42,7 @@ def rep_cluster_pick(in_b6, und, cpus, verbose):
 		rep_pick = rep_pick.sum(axis=0)
 		rep_pick = rep_pick.to_dict()
 		rep_pick = max(rep_pick, key=rep_pick.get)
+	print('picked rep cluster')
 	os.remove(temp_result_m)
 	return rep_pick
 
