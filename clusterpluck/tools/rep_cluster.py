@@ -67,7 +67,7 @@ def main():
 	rep_pick = str(rep_cluster_pick(in_b6, und, cpus, verbose))
 	os.remove('tempfilter.txt')
 	with open(args.output, 'w') if args.output != '-' else sys.stdout as outf:
-		outf.write(rep_pick)
+		outf.write('Best representative cluster by all-vs-all similarity:\n' + rep_pick + '\n')
 
 
 if __name__ == '__main__':
