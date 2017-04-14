@@ -20,8 +20,11 @@ def make_arg_parser():
 												'select only [universal] OFUs,'
 												'select only OFUs in a [majority] of strains', required=False, default='majority')
 	parser.add_argument('-p', '--profiles',
-						help='Save the matching OFU profiles csv as "matching_ofu_profiles.csv" in current working directory',
+						help='Save the matching OFU profiles csv',
 						action='store_true', required=False, default=False)
+	parser.add_argument('--profiles_fp',
+						help='Where to save the profiles (default = "./matching_ofu_profiles.csv")',
+						required=False, default='matching_ofu_profiles.csv')
 	parser.add_argument('--strain', help='Only match at strain level, or species if strain not presented in taxon table', action='store_true', required=False, default=False)
 	parser.add_argument('--biom', help='Also convert the final OFU table to biom format, compatible with QIIME, etc. Output must end with ".txt".', action='store_true', required=False, default=False)
 	parser.add_argument('-c', '--cpus', help='Number of processors to use', required=False)
@@ -284,7 +287,7 @@ def main():
 		ofu_matched = match_tables(taxon_file, ofu_infile, intax, ofu_index, opt, cpus, strain)
 	print('Finished matching OFUs from organisms in taxon table... now multiplying for abundance...\n')
 	if args.profiles:
-		profile_out = 'matching_ofu_profiles.csv'
+		profile_out = os.path.join(args.profiles_fp)
 		with open(profile_out, 'w') as outf:
 			ofu_matched.to_csv(outf)
 	with open(args.taxons, 'r') as intaxm:

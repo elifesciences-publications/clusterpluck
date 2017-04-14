@@ -177,6 +177,8 @@ def main():
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	# print(' '.join(['make_ofu_tree.R', rep_result_m, newick_tree]))
 	# Make the tree with R from the representative cluster scores matrix
+	# if int(cut_h) > 50:
+	# 	os.system('R --max-ppsize=250000')
 	os.system(' '.join(['make_ofu_tree.R', rep_ofu_result, newick_tree, method]))
 	if not args.no_cleanup:
 		print('\nAlrighty, cleaning up temp files...\n')
