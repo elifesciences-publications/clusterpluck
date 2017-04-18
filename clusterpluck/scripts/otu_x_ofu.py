@@ -68,6 +68,8 @@ def parallel_taxon_match(taxon, args_list):
 	taxon = str(taxon)
 	if len(taxon.split(';')) < 3:
 		return None
+	if '; ' in taxon:
+		';'.join(taxon.split('; '))
 	# print(taxon)
 	n = []
 	t_odf = pd.DataFrame(columns=ofu_index)
@@ -89,7 +91,7 @@ def parallel_taxon_match(taxon, args_list):
 				line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 				t_odf = t_odf.append(line_df)
 			else:
-				pass
+				continue
 		if t_odf.empty and len(taxon.split(';')) >= 4:
 			up_name = taxon.split(';')[k - 1]
 			# print(k, up_name, 'up one')
@@ -101,7 +103,7 @@ def parallel_taxon_match(taxon, args_list):
 						line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 						t_odf = t_odf.append(line_df)
 					else:
-						pass
+						continue
 		if t_odf.empty and len(taxon.split(';')) >= 5:
 			up_name = taxon.split(';')[k - 2]
 			if 'k__' or 'p__' in up_name:
@@ -115,7 +117,7 @@ def parallel_taxon_match(taxon, args_list):
 						line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 						t_odf = t_odf.append(line_df)
 					else:
-						pass
+						continue
 		if t_odf.empty and len(taxon.split(';')) >= 6:
 			up_name = taxon.split(';')[k - 3]
 			if 'k__' or 'p__' in up_name:
@@ -129,7 +131,7 @@ def parallel_taxon_match(taxon, args_list):
 						line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 						t_odf = t_odf.append(line_df)
 					else:
-						pass
+						continue
 
 	# t_odf = odf.filter(like=name, axis=0)
 	if t_odf.empty:
@@ -173,6 +175,8 @@ def parallel_strain_match(taxon, args_list):
 	ofu_infile = args_list[1]
 	opt = args_list[2]
 	taxon = str(taxon)
+	if '; ' in taxon:
+		';'.join(taxon.split('; '))
 	# print(taxon)
 	if 's__' not in taxon and 't__' not in taxon or taxon.endswith('s__;t__') or taxon.endswith('s__;t__None'):
 		# print('no usable species or strain!')
@@ -198,7 +202,7 @@ def parallel_strain_match(taxon, args_list):
 				line_df = pd.DataFrame([line[1:]], columns=ofu_index, index=[line[0]], dtype='int')
 				t_odf = t_odf.append(line_df)
 			else:
-				pass
+				continue
 
 	# t_odf = odf.filter(like=name, axis=0)
 	if t_odf.empty or sum(t_odf.sum()) == 0:
@@ -249,6 +253,13 @@ def multiply_tables(taxon_file, intaxm, ofu_matched):
 		print('ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1])
 		print('\nUsing OFU index to limit to common taxa...\n')
 		otu_taxon_set = set(tdf.index)
+		otu_taxon_set_fixed = []
+		for t in otu_taxon_set:
+			if '; ' in t:
+				t = ';'.join(t.split('; '))
+				otu_taxon_set_fixed.append(t)
+			else:
+				otu_taxon_set_fixed.append(t)
 		ofu_taxon_list = [t for t in ofu_taxon_list if t in otu_taxon_set]
 		tdf = tdf.loc[ofu_taxon_list]
 		ofu_matched = ofu_matched.loc[ofu_taxon_list]
