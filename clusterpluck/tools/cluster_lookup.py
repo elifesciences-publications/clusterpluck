@@ -143,7 +143,7 @@ def list_organism_ofus(orgs, hclus, height, outpath):
 						org_ofu_dup.append(ofu_num)
 						ofu_dict[name].extend([ofu_num])
 					else:
-						pass
+						continue
 	height = str(height)
 	ofu_file = ''.join(['OFUs_from_refseq_id', height, '.txt'])
 	outdf = pd.DataFrame.from_dict(ofu_dict, orient='index')

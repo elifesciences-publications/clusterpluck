@@ -59,9 +59,11 @@ def prod_types_per_sample(intaxa, type_dd, types):
 			taxon = str(taxon)
 			if '; ' in taxon:
 				';'.join(taxon.split('; '))
+			# Screen through only taxa with a species or strain-level annotation
 			if 's__' not in taxon and 't__' not in taxon or taxon.endswith('s__;t__') or taxon.endswith('s__;t__None'):
-				break
+				continue
 			# print(taxon)
+			# If there's no strain, go to species
 			if taxon.endswith('t__None') or taxon.endswith('t__'):
 				k = -2
 				name = taxon.split(';')[k]
@@ -70,11 +72,12 @@ def prod_types_per_sample(intaxa, type_dd, types):
 				k = -1
 				name = taxon.split(';')[k]
 				taxons = [n for n in list(type_dd.keys()) if name in n]
+				# If strain fails to match, back up and take species
 				if not taxons:
 					k = -2
 					name = taxon.split(';')[k]
-					if name.endswith('__None' or name.endswith('__')):
-						break
+					if name.endswith('__None') or name.endswith('__') or 's__' not in name:
+						continue  # If there's no species information, go to the next taxon
 					taxons = [n for n in list(type_dd.keys()) if name in n]
 			for t in taxons:
 				ptypes.extend(type_dd[t])
