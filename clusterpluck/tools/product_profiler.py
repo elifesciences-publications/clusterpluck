@@ -38,6 +38,20 @@ def type_dict(intypes):
 	return type_dd, types
 
 
+# If matched multiple taxons (common with species annotations), just use the taxon match with the most cluster types represented
+def rep_taxon(taxons, type_dd):
+	longest = len(type_dd[taxons[0]])
+	reptax = str(taxons[0])
+	for t in taxons:
+		ptypes = type_dd[t]
+		if len(ptypes) > longest:
+			longest = len(ptypes)
+			reptax = str(t)
+		else:
+			continue
+	return reptax
+
+
 def prod_types_per_sample(intaxa, type_dd, types):
 	with open(intaxa, 'r') as intaxa:
 		# taxa_reader = csv.reader(intaxa, delimiter='\t')
@@ -79,8 +93,12 @@ def prod_types_per_sample(intaxa, type_dd, types):
 					if name.endswith('__None') or name.endswith('__') or 's__' not in name:
 						continue  # If there's no species information, go to the next taxon
 					taxons = [n for n in list(type_dd.keys()) if name in n]
-			for t in taxons:
-				ptypes.extend(type_dd[t])
+			# Just pick a representative taxon if multiple match the species/strain name hit
+			if len(taxons) > 1:
+				reptax = rep_taxon(taxons, type_dd)
+				ptypes.extend(type_dd[reptax])
+			elif len(taxons) == 1:
+				ptypes.extend(type_dd[str(taxons[0])])
 		if ptypes:
 			counted = Counter(ptypes)
 			samp_typedf = pd.DataFrame.from_dict(dict(counted), orient='index')
