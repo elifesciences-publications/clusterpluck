@@ -21,7 +21,7 @@ def main():
 	for cdir in os.listdir('.'):
 		if cdir.startswith('GCF'):
 			if "cluster_aa_sequences" not in os.listdir(cdir):
-				pass
+				continue
 			else:
 				fname = cdir.strip('_genomic')
 				outfilename = fname + '_cluster_aa_seqs.mpfa'
