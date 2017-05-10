@@ -185,7 +185,8 @@ def main():
 		for n in names:
 			p_type = str(type_dd[n])
 			p_ofu = [key for key, value in bgc_dd.items() if n in value]
-			p_ofu = int(p_ofu)
+			print(p_ofu)
+			p_ofu = int(p_ofu[0])
 			full_ofu = str('%05d' % p_ofu)
 			full_ofu = ''.join(['ofu', full_ofu])
 			ofu_types.write(full_ofu + ',' + p_type + '\n')
