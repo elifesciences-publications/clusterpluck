@@ -10,6 +10,7 @@ from itertools import repeat
 from multiprocessing import Pool
 from multiprocessing import cpu_count
 from clusterpluck.tools.h_clustering import process_hierarchy
+from clusterpluck.tools.product_profiler import type_dict
 
 
 # The arg parser
@@ -31,12 +32,14 @@ def make_arg_parser():
 						help='Directory in which to save the cluster information files (default = cwd)', required=False, default='.')
 	parser.add_argument('-no_cleanup',
 						help='Keep all intermediate temp and log files', action='store_true', required=False, default=False)
-	parser.add_argument('-p', '--cpus',
+	parser.add_argument('-c', '--cpus',
 						help='Number of cpus to use', required=False)
 	parser.add_argument('-u', '--underscore',
 						help='For clustersuck, the underscore position (integer) on which to define a cluster', required=False, default=4)
 	parser.add_argument('-quiet',
 						help='Do not print all clustersuck output to screen', action='store_true', required=False, default=False)
+	parser.add_argument('-y', '--types',
+						help='If an OFU-to-representative-cluster-product-type table is desired, provide the path to the strain product types csv.', required=False)
 	return parser
 
 
@@ -94,7 +97,7 @@ def relabeler(rep_matrix, bgc_dd):
 	# print(len(ofu_ids))
 	# print(ofu_ids[1:10])
 	if not len(names) == len(ofu_ids):
-		print('Error renaming data with OFUs; check for duplicate entries in dataset')
+		print('Error renaming data with OFUs; check for duplicate entries in data set')
 		sys.exit()
 	rep_df.columns = ofu_ids
 	rep_df.index = ofu_ids
@@ -169,6 +172,24 @@ def main():
 	rep_result_m = os.path.join(temppath, 'repset_matrix_%s.csv' % cut_h)
 	# Run clustersuck on the representative clusters, to generate the representative scores matrix at chosen height
 	os.system(' '.join(['clustersuck', in_b6, rep_result_m, str(und), rep_clusters, str(cpus)]))
+	if args.types:
+		type_dd, types = type_dict(args.types)
+		ofu_types_fp = os.path.join(outpath, ''.join(['ofu_', cut_h, '_cluster_types.csv']))
+		ofu_types = open(ofu_types_fp, 'w')
+		ofu_types.write(',cluster_type\n')
+		with open(rep_result_m, 'r') as rep_matrix:
+			rep_df = pd.read_csv(rep_matrix, header=0, index_col=0)
+		rep_df.sort_index(axis=0, inplace=True)
+		rep_df.sort_index(axis=1, inplace=True)
+		names = list(rep_df.columns)
+		for n in names:
+			p_type = str(type_dd[n])
+			p_ofu = [key for key, value in bgc_dd.items() if n in value]
+			p_ofu = int(p_ofu)
+			full_ofu = str('%05d' % p_ofu)
+			full_ofu = ''.join(['ofu', full_ofu])
+			ofu_types.write(full_ofu + ',' + p_type + '\n')
+		ofu_types.close()
 	with open(rep_result_m, 'r') as rep_matrix:
 		rep_df = relabeler(rep_matrix, bgc_dd)
 	rep_ofu_result = os.path.join(outpath, 'ofu_repset_matrix.csv')
@@ -177,8 +198,6 @@ def main():
 	newick_tree = os.path.join(outpath, ''.join(['OFU_tree_id', cut_h, '.tree']))
 	# print(' '.join(['make_ofu_tree.R', rep_result_m, newick_tree]))
 	# Make the tree with R from the representative cluster scores matrix
-	# if int(cut_h) > 50:
-	# 	os.system('R --max-ppsize=250000')
 	os.system(' '.join(['make_ofu_tree.R', rep_ofu_result, newick_tree, method]))
 	if not args.no_cleanup:
 		print('\nAlrighty, cleaning up temp files...\n')
