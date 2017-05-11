@@ -183,8 +183,10 @@ def main():
 		rep_df.sort_index(axis=1, inplace=True)
 		names = list(rep_df.columns)
 		for n in names:
+			print(n)
 			n = n.split('|')[-1]
 			p_type = str(type_dd[n])
+			print(n)
 			p_ofu = [key for key, value in bgc_dd.items() if n in value]
 			print(p_ofu)
 			p_ofu = int(p_ofu[0])

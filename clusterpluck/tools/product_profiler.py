@@ -32,11 +32,11 @@ def type_dict(intypes):
 			prod_type = line[1]
 			cluster = line[0].split('|')[-1]
 			type_dd[cluster].append(prod_type)
-	print('\nProcessed type table for %s organisms\n' % len(type_dd))
+	# print('\nProcessed type table for %s organisms\n' % len(type_dd))
 	with open(intypes, 'r') as infile2:
 		types = pd.read_csv(infile2, header=0, index_col=1)
 		types = set(list(types.index))
-	print('Working with %s different predicted product types\n' % len(types))
+	# print('Working with %s different predicted product types\n' % len(types))
 	return type_dd, types
 
 
