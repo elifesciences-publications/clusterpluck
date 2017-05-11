@@ -10,7 +10,6 @@ from itertools import repeat
 from multiprocessing import Pool
 from multiprocessing import cpu_count
 from clusterpluck.tools.h_clustering import process_hierarchy
-from clusterpluck.tools.product_profiler import type_dict
 
 
 # The arg parser
@@ -104,6 +103,18 @@ def relabeler(rep_matrix, bgc_dd):
 	return rep_df
 
 
+def type_dict_by_cluster(intypes):
+	type_dd = defaultdict(list)
+	with open(intypes, 'r') as infile:
+		reader = csv.reader(infile)
+		next(reader)
+		for line in reader:
+			prod_type = line[1]
+			cluster = line[0].split('|')[3]
+			type_dd[cluster].append(prod_type)
+	return type_dd
+
+
 def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
@@ -172,8 +183,9 @@ def main():
 	rep_result_m = os.path.join(temppath, 'repset_matrix_%s.csv' % cut_h)
 	# Run clustersuck on the representative clusters, to generate the representative scores matrix at chosen height
 	os.system(' '.join(['clustersuck', in_b6, rep_result_m, str(und), rep_clusters, str(cpus)]))
+	# Generate a table of representative cluster product types for each OFU
 	if args.types:
-		type_dd, types = type_dict(args.types)
+		type_dd, types = type_dict_by_cluster(args.types)
 		ofu_types_fp = os.path.join(outpath, ''.join(['ofu_', cut_h, '_cluster_types.csv']))
 		ofu_types = open(ofu_types_fp, 'w')
 		ofu_types.write(',cluster_type\n')
@@ -184,7 +196,7 @@ def main():
 		names = list(rep_df.columns)
 		for n in names:
 			print(n)
-			n = n.split('|')[-1]
+			n = n.split('|')[3]
 			p_type = str(type_dd[n])
 			print(n)
 			p_ofu = [key for key, value in bgc_dd.items() if n in value]
