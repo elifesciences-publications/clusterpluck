@@ -186,7 +186,7 @@ def main():
 	os.system(' '.join(['clustersuck', in_b6, rep_result_m, str(und), rep_clusters, str(cpus)]))
 	# Generate a table of representative cluster product types for each OFU
 	if args.types:
-		type_dd, types = type_dict_by_cluster(args.types)
+		type_dd = type_dict_by_cluster(args.types)
 		ofu_types_fp = os.path.join(outpath, ''.join(['ofu_', cut_h, '_cluster_types.csv']))
 		ofu_types = open(ofu_types_fp, 'w')
 		ofu_types.write(',cluster_type\n')
