@@ -110,9 +110,9 @@ def type_dict_by_cluster(intypes):
 		reader = csv.reader(infile)
 		next(reader)
 		for line in reader:
-			prod_type = line[1]
+			prod_type = str(line[1])
 			cluster = line[0].split('|')[3]
-			type_dd[cluster].append(prod_type)
+			type_dd[cluster] = prod_type
 	return type_dd
 
 
@@ -196,9 +196,8 @@ def main():
 		rep_df.sort_index(axis=1, inplace=True)
 		names = list(rep_df.columns)
 		for n in names:
-			print(n)
 			n = n.split('|')[3]
-			p_type = str(type_dd[n])
+			p_type = type_dd[n]
 			print(p_type)
 			print(n)
 			# p_ofu = [key for key, value in bgc_dd.items() if n in value]
@@ -210,8 +209,6 @@ def main():
 						match = True
 					if match:
 						p_ofu_list.append(key)
-			print(p_ofu_list[0])
-			print(set(p_ofu_list))
 			p_ofu = int(p_ofu_list[0])
 			full_ofu = str('%05d' % p_ofu)
 			full_ofu = ''.join(['ofu', full_ofu])
