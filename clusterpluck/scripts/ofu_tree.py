@@ -212,7 +212,7 @@ def main():
 						p_ofu_list.append(key)
 			print(p_ofu_list[0])
 			print(set(p_ofu_list))
-			p_ofu = int(p_ofu[0])
+			p_ofu = int(p_ofu_list[0])
 			full_ofu = str('%05d' % p_ofu)
 			full_ofu = ''.join(['ofu', full_ofu])
 			ofu_types.write(full_ofu + ',' + p_type + '\n')
