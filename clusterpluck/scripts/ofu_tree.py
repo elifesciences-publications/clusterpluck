@@ -210,8 +210,8 @@ def main():
 						match = True
 					if match:
 						p_ofu_list.append(key)
-			print(p_ofu)
-			print(set(p_ofu))
+			print(p_ofu_list[0])
+			print(set(p_ofu_list))
 			p_ofu = int(p_ofu[0])
 			full_ofu = str('%05d' % p_ofu)
 			full_ofu = ''.join(['ofu', full_ofu])
