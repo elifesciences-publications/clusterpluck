@@ -199,9 +199,19 @@ def main():
 			print(n)
 			n = n.split('|')[3]
 			p_type = str(type_dd[n])
+			print(p_type)
 			print(n)
-			p_ofu = [key for key, value in bgc_dd.items() if n in value]
+			# p_ofu = [key for key, value in bgc_dd.items() if n in value]
+			p_ofu_list = []
+			for key, value in bgc_dd.items():
+				for v in value:
+					match = False
+					if n in v:
+						match = True
+					if match:
+						p_ofu_list.append(key)
 			print(p_ofu)
+			print(set(p_ofu))
 			p_ofu = int(p_ofu[0])
 			full_ofu = str('%05d' % p_ofu)
 			full_ofu = ''.join(['ofu', full_ofu])
