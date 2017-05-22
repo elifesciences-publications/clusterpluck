@@ -198,9 +198,8 @@ def main():
 		for n in names:
 			n = n.split('|')[3]
 			p_type = type_dd[n]
-			print(p_type)
-			print(n)
-			# p_ofu = [key for key, value in bgc_dd.items() if n in value]
+			# print(p_type)
+			# print(n)
 			p_ofu_list = []
 			for key, value in bgc_dd.items():
 				for v in value:
