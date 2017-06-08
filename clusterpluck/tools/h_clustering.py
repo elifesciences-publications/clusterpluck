@@ -31,7 +31,7 @@ def process_hierarchy(inf, h, method):
 	if method == 'single':
 		li = sch.single(df_v)
 	elif method == 'complete':
-		li = sch.complete(df_v)  # create the dendrogram from the condensed distance vector
+		li = sch.complete(df_v)
 	elif method == 'average':
 		li = sch.average(df_v)
 	elif method == 'weighted':

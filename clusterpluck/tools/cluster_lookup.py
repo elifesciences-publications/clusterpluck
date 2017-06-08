@@ -136,7 +136,7 @@ def identify_organism(org, nt_cat, db, nt):
 	return name
 
 
-def list_organism_ofus(orgs, hclus, nt_cat, height, outpath):
+def list_organism_ofus(orgs, nt_cat, hclus, height, outpath):
 	bgc_dd = defaultdict(list)
 	for value, key in hclus.itertuples(index=True):
 		key = str('%05d' % key)
