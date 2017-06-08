@@ -116,15 +116,23 @@ def compile_ofu_dnasequences(inf_d, bgc, dna_outf):
 	return dna_outf
 
 
-def identify_organism(org, db, nt):
+def identify_organism(org, nt_cat, db, nt):
 	# with suppress_stdout():
 	if 'cluster' in org:
 		if '.cluster' in org:
 			org.replace('.cluster', '_cluster')
-		refseqid = '_'.join(org.split('_')[:2])
+		if len(org.split('_')) == 2:
+			ref_id = org.split('_')[0]
+		else:
+			ref_id = '_'.join(org.split('_')[:2])
 	else:
-		refseqid = org
-	name = refseq_to_name(refseqid, db=db, nt=nt)
+		ref_id = org
+	if '_' in ref_id:
+		name = refseq_to_name(ref_id, db=db, nt=nt)
+	else:
+		if nt_cat == '-':
+			sys.exit('Genbank ID BGC headers require an NT Catalog for annotation... see --help')
+		tid, name = genbank_id_to_tid(ref_id, nt_cat)
 	return name
 
 
