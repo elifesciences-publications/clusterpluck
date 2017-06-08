@@ -136,7 +136,7 @@ def identify_organism(org, nt_cat, db, nt):
 	return name
 
 
-def list_organism_ofus(orgs, hclus, height, outpath):
+def list_organism_ofus(orgs, hclus, nt_cat, height, outpath):
 	bgc_dd = defaultdict(list)
 	for value, key in hclus.itertuples(index=True):
 		key = str('%05d' % key)
@@ -154,7 +154,7 @@ def list_organism_ofus(orgs, hclus, height, outpath):
 		for ofu_num, ofu_orgs in bgc_dd.items():
 			for ofu_org in ofu_orgs:
 				if org in ofu_org:
-					name = identify_organism(org, db=db, nt=nt)
+					name = identify_organism(org, nt_cat, db=db, nt=nt)
 					if ofu_num not in org_ofu_dup:
 						org_ofu_dup.append(ofu_num)
 						ofu_dict[name].extend([ofu_num])
@@ -240,7 +240,7 @@ def main():
 	if args.name:
 		orgs = args.name
 		height = args.height
-		list_organism_ofus(orgs, hclus, height, outpath)
+		list_organism_ofus(orgs, nt_cat, hclus, height, outpath)
 
 	sys.exit()
 
