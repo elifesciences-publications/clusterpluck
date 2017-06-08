@@ -7,9 +7,6 @@ import pandas as pd
 import numpy as np
 from collections import defaultdict
 from collections import Counter
-from itertools import repeat
-from multiprocessing import cpu_count
-from multiprocessing import Pool
 
 
 # The arg parser
