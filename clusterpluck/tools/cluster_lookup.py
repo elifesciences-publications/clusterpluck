@@ -15,6 +15,7 @@ from clusterpluck.tools.annotations import refseq_to_name
 from clusterpluck.tools.h_clustering import process_hierarchy
 from clusterpluck.tools.suppress_print import suppress_stdout
 from clusterpluck.wrappers.run_blastp import run_blastp
+from clusterpluck.tools.genbank_id_to_tid import genbank_id_to_tid
 
 
 # The arg parser
@@ -32,10 +33,11 @@ def make_arg_parser():
 	parser.add_argument('-y', '--types', help='A CSV file containing the predicted product types for each cluster', required=False)
 	parser.add_argument('--method', help='The clustering linkage method to use (default = average)',
 						required=False, default='average')
+	parser.add_argument('--nt_cat', help='Path to the nt catalog, required for genbank ID clusters (i.e. antismash DB)', required=False, default='-')
 	return parser
 
 
-def list_organisms(ofus, hclus, typetable, outpath, cut_h):
+def list_organisms(ofus, hclus, nt_cat, typetable, outpath, cut_h):
 	bgc_dd = defaultdict(list)
 	for value, key in hclus.itertuples(index=True):
 		key = str('%05d' % key)
@@ -62,6 +64,12 @@ def list_organisms(ofus, hclus, typetable, outpath, cut_h):
 					else:
 						ncbi_tid = int(ncbi_tid)
 						name = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
+				elif '|genbank|' in bgc:
+					gbk_id = bgc.split('|')[3].split('_cluster')[0]
+					if nt_cat == '-':
+						sys.exit('Genbank ID BGC headers require an NT Catalog for annotation... see --help')
+					tid, organism = genbank_id_to_tid(gbk_id, nt_cat)
+					name = organism
 				else:
 					refseqid = '_'.join(bgc.split('_')[:2])
 					name = refseq_to_name(refseqid, db=db, nt=nt)
@@ -161,6 +169,7 @@ def main():
 	args = parser.parse_args()
 	outpath = args.output
 	method = args.method
+	nt_cat = args.nt_cat
 	if not os.path.isdir(outpath):
 		os.mkdir(outpath)
 		if not os.path.isdir(outpath):
@@ -177,7 +186,7 @@ def main():
 	if args.ofu:
 		ofus = args.ofu
 		cut_h = str(args.height)
-		bgc_dd = list_organisms(ofus, hclus, typetable, outpath, cut_h)
+		bgc_dd = list_organisms(ofus, hclus, nt_cat, typetable, outpath, cut_h)
 		if args.dna_fasta or args.mpfa:  # only generate OFU sequence files if the appropriate files are provided
 			ofu_list = ofus.split(',')
 			i = 0
