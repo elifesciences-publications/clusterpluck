@@ -36,9 +36,9 @@ def main():
 				if ncbi_tid:
 					ncbi_tid = ncbi_tid[0]
 					organism = nt.gg_lineage(ncbi_tid)
-					genus_species = organism.split(';')[-1]
-					genus_species = genus_species.replace('s__','')
-					outf.write('>ncbi_tid|%d|ref|%s|organism|%s|\n' % (ncbi_tid, header, genus_species))
+					# genus_species = organism.split(';')[-1]
+					# genus_species = genus_species.replace('s__','')
+					outf.write('>ncbi_tid|%d|ref|%s|organism|%s|\n' % (ncbi_tid, header, organism))
 					outf.write(sequence+'\n')
 				else:
 					outf.write('>ref|%s|\n' % (header))
