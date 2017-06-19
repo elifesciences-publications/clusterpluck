@@ -29,6 +29,7 @@ setup(
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
 		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq:main',
 		'scrape_antismash_db = clusterpluck.parsers.scrape_antismash_db:main',
+		'scrape_mibig = clusterpluck.parsers.scrape_mibig:main',
 		'list_cluster_types = clusterpluck.parsers.list_cluster_types:main',
 		'blastp_to_matrix = clusterpluck.scripts.blastp_to_matrix:main',
 		'combine_metrics = clusterpluck.scripts.combine_metrics:main',
