@@ -13,7 +13,8 @@ def genbank_id_to_tid(gbk_id, nt_cat):
 		for line in reader:
 			if line[1] in gbk_set:
 				tid = line[2]
-				organism = tid_to_name(tid, nt=nt)
+				tid = int(tid)
+				organism = nt.green_genes_lineage(tid, depth=8, depth_force=True)
 			else:
 				tid, organism = 'na', 'k__None;p__None;c__None;o__None;f__None;g__None;s__None;t__None'
 	return tid, organism

@@ -43,6 +43,11 @@ def refseq_to_name(refseq_id, db=RefSeqDatabase(), nt=NCBITree()):
 	return organism
 
 
+def tid_to_name(ncbi_tid, nt=NCBITree()):
+	organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
+	return organism
+
+
 def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
@@ -54,11 +59,12 @@ def main():
 		elif args.refseq != '-':
 			ncbi_tid = refseq_to_tid(refseq_id=args.refseq)
 			organism = refseq_to_name(refseq_id=args.refseq)
-			genus_species = organism.split(';')[-1]
-			genus_species = genus_species.replace('s__', '')
+			# genus_species = organism.split(';')[-1]
+			# genus_species = genus_species.replace('s__', '')
 		elif args.tid != '-':
 			ncbi_tid = int(args.tid)
-		outf.write('>ncbi_tid|%d|organism|%s\n' % (ncbi_tid, genus_species))
+			organism = tid_to_name(ncbi_tid)
+		outf.write('>ncbi_tid|%d|organism|%s\n' % (ncbi_tid, organism))
 		outf.write('\n')
 
 if __name__ == '__main__':
