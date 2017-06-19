@@ -16,7 +16,7 @@ from ninja_utils.parsers import FASTA
 
 # The arg parser
 def make_arg_parser():
-	parser = argparse.ArgumentParser(description='Description here')
+	parser = argparse.ArgumentParser(description='Parser for scraping the cluster sequences from the antismash DB genbank files')
 	parser.add_argument('-i', '--input', help='Directory in which to find all the cluster .gbk files (default = cwd)', required=False, default='.')
 	parser.add_argument('-nt_cat', help='The nucleotide_catalog tsv file matching Genbank accessions to NCBI taxon IDs', required=True)
 	parser.add_argument('-o', '--output', help='Where to save the output files (default = new dir in cwd)', required=False, default='.')
