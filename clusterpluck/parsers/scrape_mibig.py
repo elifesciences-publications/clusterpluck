@@ -50,8 +50,8 @@ def pluckify_mibig(inf, outaa, gbk_dd):
 		bgc_tid = bgc_info[0]
 		bgc_bug = bgc_info[1]
 		outaa.write('>' + 'ncbi_tid|' + str(bgc_tid) +
+				'|mibig|' + bgc_id + '.1_cluster001' + '_' + m_head[1] + '_' + m_head[2] +
 				'|genbank|' + m_head[6] +
-				'|mibig_id|' + bgc_id + '.' + m_head[1] + '_' + m_head[2] +
 				'|organism|' + bgc_bug + '\n')
 		outaa.write(sequence + '\n')
 	return None
