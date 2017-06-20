@@ -21,6 +21,7 @@ def make_arg_parser():
 
 
 def get_tids(gbk, gbk_file, outf, nt=NCBITree()):
+	dict_list = []
 	with open(gbk_file, 'r') as inf:
 		p = re.compile(r"^(\s+)\/db_xref=\"taxon:(\d+)\"")
 		for line in inf:
@@ -31,18 +32,21 @@ def get_tids(gbk, gbk_file, outf, nt=NCBITree()):
 				dict_list = [ncbi_tid, organism]
 				outf.write(gbk + '\t' + str(ncbi_tid) + '\t' + organism + '\n')
 				break
-	if dict_list:
-		return dict_list
+		if not dict_list:
+			print(gbk + ' failed to find tid')
+			return ['None', 'None']
+		else:
+			return dict_list
 
 
 def pluckify_mibig(inf, outaa, gbk_dd):
 	mibig_orig = FASTA(inf)
 	for header, sequence in mibig_orig.read():
 		m_head = header.split('|')
-		print(m_head)
+		# print(m_head)
 		bgc_id = m_head[0]
 		bgc_info = gbk_dd[bgc_id]
-		print(bgc_info)
+		# print(bgc_info)
 		bgc_tid = bgc_info[0]
 		bgc_bug = bgc_info[1]
 		outaa.write('>' + 'ncbi_tid|' + str(bgc_tid) +
@@ -69,7 +73,7 @@ def main():
 	outf = open(os.path.join(outpath, 'bgc_2_tid.txt'), 'w')
 	gbk_dd = defaultdict(list)
 	for gbk in gbks:
-		print(gbk)
+		# print(gbk)
 		gbk_file = os.path.join(gbkpath, gbk)
 		gbk_id = gbk.split('.')[0]
 		dict_list = get_tids(gbk_id, gbk_file, outf)
