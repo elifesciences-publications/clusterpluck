@@ -48,6 +48,8 @@ def pluckify_mibig(inf, outaa, gbk_dd):
 		bgc_info = gbk_dd[bgc_id]
 		# print(bgc_info)
 		bgc_tid = bgc_info[0]
+		if bgc_tid == 'None':
+			continue
 		bgc_bug = bgc_info[1]
 		outaa.write('>' + 'ncbi_tid|' + str(bgc_tid) +
 				'|mibig|' + bgc_id + '.1_cluster001' + '_' + m_head[1] + '_' + m_head[2] +
