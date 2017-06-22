@@ -23,14 +23,20 @@ def make_arg_parser():
 def get_tids(gbk, gbk_file, outf, nt=NCBITree()):
 	dict_list = []
 	with open(gbk_file, 'r') as inf:
+		y = re.compile(r"^(DEFINITION)\s\s(.*)$")
 		p = re.compile(r"^(\s+)\/db_xref=\"taxon:(\d+)\"")
 		for line in inf:
+			if line.startswith('DEFINITION'):
+				y_m = y.search(line)
+				prod = str(y_m.group(2))
+				prod = '_'.join(prod.split(' '))
+				continue
 			if line.startswith('                     /db_xref="taxon:'):
 				m = p.search(line)
 				ncbi_tid = int(m.group(2))
 				organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
-				dict_list = [ncbi_tid, organism]
-				outf.write(gbk + '\t' + str(ncbi_tid) + '\t' + organism + '\n')
+				dict_list = [ncbi_tid, organism, prod]
+				outf.write(gbk + '\t' + str(ncbi_tid) + '\t' + organism + '\t' + prod + '\n')
 				break
 		if not dict_list:
 			print(gbk + ' failed to find tid')
