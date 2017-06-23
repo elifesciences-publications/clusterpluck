@@ -91,7 +91,7 @@ def main():
 		gbk_dd[gbk_id] = dict_list
 	outaa = open(os.path.join(outpath, 'plucked_mibig_db.mpfa'), 'w')
 	outf = open(os.path.join(outpath, 'bgc_2_tid.txt'), 'w')
-	outf.write('\tcluster_type')
+	outf.write('\tcluster_type\n')
 	with open(args.mibig_aa, 'r') as inf:
 		pluckify_mibig(inf, outaa, outf, gbk_dd)
 	outaa.close()
