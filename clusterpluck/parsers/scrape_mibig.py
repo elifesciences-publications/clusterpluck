@@ -20,7 +20,7 @@ def make_arg_parser():
 	return parser
 
 
-def get_tids(gbk, gbk_file, nt=NCBITree()):
+def get_tids(gbk, gbk_file, outf, nt=NCBITree()):
 	dict_list = []
 	with open(gbk_file, 'r') as inf:
 		y = re.compile(r"^(DEFINITION)\s\s(.*)$")
@@ -35,7 +35,8 @@ def get_tids(gbk, gbk_file, nt=NCBITree()):
 				m = p.search(line)
 				ncbi_tid = int(m.group(2))
 				organism = nt.green_genes_lineage(ncbi_tid, depth=8, depth_force=True)
-				dict_list = [ncbi_tid, organism, prod]
+				dict_list = [ncbi_tid, organism]
+				outf.write('ncbi_tid|' + str(ncbi_tid) + '|mibig|' + gbk + '.1_cluster001' + '|organism|' + organism + '\t' + prod + '\n')
 				break
 		if not dict_list:
 			print(gbk + ' failed to find tid')
@@ -44,7 +45,7 @@ def get_tids(gbk, gbk_file, nt=NCBITree()):
 			return dict_list
 
 
-def pluckify_mibig(inf, outaa, outf, gbk_dd):
+def pluckify_mibig(inf, outaa, gbk_dd):
 	mibig_orig = FASTA(inf)
 	for header, sequence in mibig_orig.read():
 		m_head = header.split('|')
@@ -56,16 +57,11 @@ def pluckify_mibig(inf, outaa, outf, gbk_dd):
 		if bgc_tid == 'None':
 			continue
 		bgc_bug = bgc_info[1]
-		bgc_type = bgc_info[2]
 		outaa.write('>' + 'ncbi_tid|' + str(bgc_tid) +
 				'|mibig|' + bgc_id + '.1_cluster001' + '_' + m_head[1] + '_' + m_head[2] +
 				'|genbank|' + m_head[6] +
 				'|organism|' + bgc_bug + '\n')
 		outaa.write(sequence + '\n')
-		outf.write('ncbi_tid|' + str(bgc_tid) +
-				'|mibig|' + bgc_id + '.1_cluster001' + '_' + m_head[1] + '_' + m_head[2] +
-				'|genbank|' + m_head[6] +
-				'|organism|' + bgc_bug + '\t' + bgc_type + '\n')
 	return None
 
 
@@ -82,20 +78,20 @@ def main():
 	gbks = os.listdir(gbkpath)
 	gbks = [f for f in gbks if f.endswith('gbk')]
 	# nt = NCBITree()
+	outf = open(os.path.join(outpath, 'bgc_2_tid.txt'), 'w')
+	outf.write('\tcluster_type')
 	gbk_dd = defaultdict(list)
 	for gbk in gbks:
 		# print(gbk)
 		gbk_file = os.path.join(gbkpath, gbk)
 		gbk_id = gbk.split('.')[0]
-		dict_list = get_tids(gbk_id, gbk_file)
+		dict_list = get_tids(gbk_id, gbk_file, outf)
 		gbk_dd[gbk_id] = dict_list
-	outaa = open(os.path.join(outpath, 'plucked_mibig_db.mpfa'), 'w')
-	outf = open(os.path.join(outpath, 'bgc_2_tid.txt'), 'w')
-	outf.write('\tcluster_type\n')
-	with open(args.mibig_aa, 'r') as inf:
-		pluckify_mibig(inf, outaa, outf, gbk_dd)
-	outaa.close()
 	outf.close()
+	outaa = open(os.path.join(outpath, 'plucked_mibig_db.mpfa'), 'w')
+	with open(args.mibig_aa, 'r') as inf:
+		pluckify_mibig(inf, outaa, gbk_dd)
+	outaa.close()
 
 
 if __name__ == '__main__':
