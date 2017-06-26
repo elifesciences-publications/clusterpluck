@@ -79,7 +79,7 @@ def main():
 	gbks = [f for f in gbks if f.endswith('gbk')]
 	# nt = NCBITree()
 	outf = open(os.path.join(outpath, 'bgc_2_tid.txt'), 'w')
-	outf.write('\tcluster_type')
+	outf.write('\tcluster_type\n')
 	gbk_dd = defaultdict(list)
 	for gbk in gbks:
 		# print(gbk)
