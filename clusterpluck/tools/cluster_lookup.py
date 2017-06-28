@@ -154,21 +154,24 @@ def list_organism_ofus(orgs, nt_cat, hclus, height, outpath):
 		for ofu_num, ofu_orgs in bgc_dd.items():
 			for ofu_org in ofu_orgs:
 				if org in ofu_org:
-					name = identify_organism(org, nt_cat, db=db, nt=nt)
+					if org.startswith('BGC'):
+						name = org
+					else:
+						name = identify_organism(org, nt_cat, db=db, nt=nt)
 					if ofu_num not in org_ofu_dup:
 						org_ofu_dup.append(ofu_num)
 						ofu_dict[name].extend([ofu_num])
 					else:
 						continue
 	height = str(height)
-	ofu_file = ''.join(['OFUs_from_refseq_id', height, '.txt'])
+	ofu_file = ''.join(['OFUs_from_similarity_level', height, '.txt'])
 	outdf = pd.DataFrame.from_dict(ofu_dict, orient='index')
 	if not outdf.empty:
 		with open(os.path.join(outpath, ofu_file), 'w') as outf:
 			outdf.to_csv(outf, sep='\t', header=False)
 		print('\nOFU assigments written to file for the %d organism ID entries given.\n' % i)
 	else:
-		print('\nNo OFU assignments found; check RefSeq ID and format')
+		print('\nNo OFU assignments found; check RefSeq / Genbank / MIBiG identifier and format')
 	return None
 
 
