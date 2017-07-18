@@ -34,6 +34,8 @@ def make_arg_parser():
 	parser.add_argument('--method', help='The clustering linkage method to use (default = average)',
 						required=False, default='average')
 	parser.add_argument('--nt_cat', help='Path to the nt catalog, required for genbank ID clusters (i.e. antismash DB)', required=False, default='-')
+	parser.add_argument('--homologs', help='Take the reported OFU from an identifier query and then get the clusters in that OFU',
+						action='store_true', required=False, default='false')
 	return parser
 
 
@@ -172,7 +174,7 @@ def list_organism_ofus(orgs, nt_cat, hclus, height, outpath):
 		print('\nOFU assigments written to file for the %d organism ID entries given.\n' % i)
 	else:
 		print('\nNo OFU assignments found; check RefSeq / Genbank / MIBiG identifier and format')
-	return None
+	return ofu_dict
 
 
 def main():
@@ -243,7 +245,12 @@ def main():
 	if args.name:
 		orgs = args.name
 		height = args.height
-		list_organism_ofus(orgs, nt_cat, hclus, height, outpath)
+		ofu_dict = list_organism_ofus(orgs, nt_cat, hclus, height, outpath)
+		if args.homologs:
+			for key, value in ofu_dict.items():
+				ofus = value
+				cut_h = str(args.height)
+				homolog_dd = list_organisms(ofus, hclus, nt_cat, typetable, outpath, cut_h)
 
 	sys.exit()
 
