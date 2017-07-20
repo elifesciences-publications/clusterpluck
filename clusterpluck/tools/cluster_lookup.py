@@ -248,7 +248,7 @@ def main():
 		ofu_dict = list_organism_ofus(orgs, nt_cat, hclus, height, outpath)
 		if args.homologs:
 			for key, value in ofu_dict.items():
-				ofus = value
+				ofus = ','.join(value)
 				cut_h = str(args.height)
 				homolog_dd = list_organisms(ofus, hclus, nt_cat, typetable, outpath, cut_h)
 
