@@ -248,9 +248,9 @@ def multiply_tables(taxon_file, intaxm, ofu_matched):
 	tdf = tdf.fillna(0)
 	ofu_taxon_list = list(ofu_matched.index)
 	if not tdf.shape[0] == ofu_matched.shape[0]:
-		print('\nFYI, some taxa did not end up in the ofu profile...')
+		print('FYI, some taxa did not end up in the ofu profile...')
 		print('Taxon table dimensions =', tdf.shape[0], 'taxa,', tdf.shape[1] samples)
-		print('Total OFU profile dimensions = ', ofu_matched.shape[0], 'OFUs,', ofu_matched.shape[1], 'strains')
+		print('Matched OFU profile dimensions = ', ofu_matched.shape[0], 'taxa,', ofu_matched.shape[1], 'OFUs')
 		print('\nUsing OFU index to limit to common taxa...\n')
 		otu_taxon_set = set(tdf.index)
 		otu_taxon_set_fixed = []
