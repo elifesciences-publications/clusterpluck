@@ -251,7 +251,7 @@ def main():
 				ofus = ','.join(value)
 				cut_h = str(args.height)
 				homolog_dd = list_organisms(ofus, hclus, nt_cat, typetable, outpath, cut_h)
-
+				del homolog_dd
 	sys.exit()
 
 

@@ -249,8 +249,8 @@ def multiply_tables(taxon_file, intaxm, ofu_matched):
 	ofu_taxon_list = list(ofu_matched.index)
 	if not tdf.shape[0] == ofu_matched.shape[0]:
 		print('\nFYI, some taxa did not end up in the ofu profile...')
-		print('taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
-		print('ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1])
+		print('Taxon table dimensions =', tdf.shape[0], 'taxa,', tdf.shape[1] samples)
+		print('Total OFU profile dimensions = ', ofu_matched.shape[0], 'OFUs,', ofu_matched.shape[1], 'strains')
 		print('\nUsing OFU index to limit to common taxa...\n')
 		otu_taxon_set = set(tdf.index)
 		otu_taxon_set_fixed = []
@@ -263,7 +263,7 @@ def multiply_tables(taxon_file, intaxm, ofu_matched):
 		ofu_taxon_list = [t for t in ofu_taxon_list if t in otu_taxon_set]
 		tdf = tdf.loc[ofu_taxon_list]
 		ofu_matched = ofu_matched.loc[ofu_taxon_list]
-	print('Final taxon table dimensions =', tdf.shape[0], ',', tdf.shape[1])
+	print('OFU-matched taxon table dimensions =', tdf.shape[0], 'taxa,', tdf.shape[1], 'samples')
 	# print('Final ofu profile dimensions = ', ofu_matched.shape[0], ',', ofu_matched.shape[1], '\n')
 	if tdf.shape[0] != ofu_matched.shape[0]:
 		print('\nMatrix dimensions not compatible. Check taxon tables and ofu tables for duplicates. \n')
@@ -304,7 +304,7 @@ def main():
 	with open(args.taxons, 'r') as intaxm:
 		ofu_table = multiply_tables(taxon_file, intaxm, ofu_matched)
 		ofu_table = ofu_table.loc[:, (ofu_table != 0).any(axis=0)]  # removes ofus with all zeros
-		print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], ' OFUs\n')
+		print('Final ofu profile dimensions = ', ofu_table.shape[0], 'samples,', ofu_table.shape[1], 'OFUs\n')
 	with open(args.output, 'w') as outf:
 		ofu_table = ofu_table.round(decimals=int(args.round))
 		# Make the OFU table a QIIME-compatible tsv
