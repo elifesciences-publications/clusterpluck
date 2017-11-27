@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+import numpy as np
 from collections import defaultdict
 from multiprocessing import cpu_count
 
@@ -11,7 +12,7 @@ from ninja_utils.parsers import FASTA
 from clusterpluck.tools.suppress_print import suppress_stdout
 
 
-# The arg parser
+# Arg parser
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Given the processed shotgun reads, measure coverage of predicted BGCs in metagenome')
 	parser.add_argument('-s', '--seqs', help="The combined seqs file (fasta) containing QC'd shotgun reads", required=True)
@@ -39,12 +40,13 @@ def make_arg_parser():
 # 	return dna_outf
 
 
+# Make a database if necessary
 def create_bgc_db(bgc_db, temp_path):
 	acc = os.path.join(temp_path, 'bgc_db.acc')
 	edb = os.path.join(temp_path, 'bgc_db.edb')
-	os.system(' '.join(['burst -r', bgc_db, '-a', acc, '-o', edb, '-f -d -s']))
-	os.system(' '.join(['burst -r', edb, '-a', acc, '-o /dev/null']))
-	os.system(' '.join(['burst -r', edb, '-o /dev/null']))
+	os.system(' '.join(['burst15 -r', bgc_db, '-a', acc, '-o', edb, '-d DNA -s']))
+	os.system(' '.join(['burst15 -a', acc, '-o /dev/null']))
+	os.system(' '.join(['burst15 -r', edb, '-o /dev/null']))
 	os.remove(acc)
 	os.remove(edb)
 	acx = os.path.join(temp_path, 'bgc_db.acx')
@@ -54,20 +56,23 @@ def create_bgc_db(bgc_db, temp_path):
 	return acx, edx
 
 
+# Run the BURST alignment
 def align_bgcs(outpath, seqs, acx, edx, cpus):
 	alignment = os.path.join(outpath, 'bgc_alignments.b6')
 	if acx != '-':
-		os.system(' '.join(['burst -q', seqs, '-a', acx, '-f -n -r', edx, '-o', alignment, '-t', cpus]))
+		os.system(' '.join(['burst15 -m ALLPATHS -fr -q', seqs, '-n -r', edx, '-o', alignment, '-t', cpus, '-i 0.9', '-a', acx]))
 	else:
-		os.system(' '.join(['burst -q', seqs, '-f -n -r', edx, '-o', alignment, '-t', cpus]))
+		os.system(' '.join(['burst15 -m ALLPATHS -fr -q', seqs, '-n -r', edx, '-o', alignment, '-t', cpus, '-i 0.9']))
 	print("BURST alignment completed")
 	return alignment
-
+	# TODO: use ALLPATHS
 
 def coverage_analysis(alignment, outpath):
 	alignment_t = pd.read_table(alignment, header=None, index_col=0)
 	# TODO: Coverage... or just use shogun for the alignment and coverage?
-	coverage_result = do_stuff_to_it()
+	np.array()
+	coverage_result = os.path.join(outpath, 'coverage_result.txt')
+	do_stuff_to_it()
 	return coverage_result
 
 
