@@ -12,7 +12,7 @@ from multiprocessing import cpu_count
 # Arg parser
 def make_arg_parser():
 	parser = argparse.ArgumentParser(description='Given the processed shotgun reads, measure coverage of predicted BGCs in metagenome')
-	parser.add_argument('-s', '--seqs', help="The combined seqs file (fasta) containing QC'd shotgun reads", required=True)
+	parser.add_argument('-s', '--seqs', help="The combined seqs file (fasta) containing QC'd shotgun reads", required=False)
 	parser.add_argument('--bgc_fna', help="The BGC DNA fasta file (all BGCs in one multi-fasta file)", required=False)
 	parser.add_argument('--bgc_edx', help="The pre-made BURST database file)", required=False)
 	parser.add_argument('--bgc_acx', help="The pre-made BURST accelerator file)", required=False)
@@ -87,7 +87,10 @@ def zero_runs(tally):
 
 def max_uncovered_region(tally):
 	coverages = zero_runs(tally)
-	return np.max(coverages[:, 1] - coverages[:, 0])
+	if coverages.size == 0:
+		return 0
+	else:
+		return np.max(coverages[:, 1] - coverages[:, 0])
 
 
 def expected_coverage(tally, median_read_length):
@@ -207,13 +210,13 @@ def main():
 			for bgc_id in sample_dict_parse:
 				tally = sample_dict_parse[bgc_id]
 				max_gap = max_uncovered_region(tally)
-				print(max_gap)
+				# print(max_gap)
 				percent_coverage = get_percent_coverage(tally)
-				print(percent_coverage)
+				# print(percent_coverage)
 				predicted_coverage = expected_coverage(tally, median_read_length) * 100
-				print(predicted_coverage)
+				# print(predicted_coverage)
 				coverage_ratio = percent_coverage / predicted_coverage
-				print(coverage_ratio)
+				# print(coverage_ratio)
 				outf.write('%s\t%s\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, max_gap, percent_coverage, predicted_coverage, coverage_ratio))
 	print('Coverage analysis complete.')
 
