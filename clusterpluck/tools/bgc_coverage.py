@@ -16,14 +16,12 @@ def make_arg_parser():
 	parser.add_argument('--bgc_fna', help="The BGC DNA fasta file (all BGCs in one multi-fasta file)", required=False)
 	parser.add_argument('--bgc_edx', help="The pre-made BURST database file)", required=False)
 	parser.add_argument('--bgc_acx', help="The pre-made BURST accelerator file)", required=False)
+	parser.add_argument('--alignment', help='A pre-calculated all-vs-all alignment file in .b6 format', required=False)
 	# parser.add_argument('-b', '--bread', help='Where to find the header for the sequence (default="ref|,|")', default='ref|,|')
-	parser.add_argument('l', '--lengths', help="The table providing length of each BGC in bp", required=True)
+	parser.add_argument('-l', '--lengths', help="The table providing length of each BGC in bp", required=True)
 	parser.add_argument('-o', '--output', help='Directory in which to save the results (default = cwd)', required=False, default='.')
-	parser.add_argument('-m', '--metrics', help='Coverage metrics to report (default = all)', required=False, default='-')
-	parser.add_argument('-c', '--ofu', help='Comma-separated list of the ofus (e.g. ofu00001,ofu00003) on which to provide information', required=False, type=str)
-	parser.add_argument('--nt_cat', help='Path to the nt catalog, required for genbank ID clusters (i.e. antismash DB)', required=False)
-	parser.add_argument('-t', '--threshold', help='Coverage threshold at which to accept a cluster alignment (default = 75%)', required=False, default=75, type=float)
-	parser.add_argument('-p', '--threads', help='Number of processors to use for alignment (default = all available)', required=False, default='-', type=int)
+	# parser.add_argument('-t', '--threshold', help='Coverage threshold at which to accept a cluster alignment (default = 75%)', required=False, default=75, type=float)
+	parser.add_argument('-p', '--threads', help='Number of processors to use for alignment (default = all available)', required=False, default='-')
 	return parser
 
 
@@ -120,19 +118,18 @@ def main():
 	parser = make_arg_parser()
 	args = parser.parse_args()
 	outpath = args.output
-	seqs = args.seqs
+	if args.seqs:
+		seqs = args.seqs
 	lengths = args.lengths
 	if args.threads == '-':
-		cpus = cpu_count()
+		cpus = int(cpu_count())
 	else:
 		cpus = int(args.threads)
-	if not args.metrics == '-':
-		output_metrics = str(args.metrics)
-	else:
-		args.metrics = 'all'
-	if not os.path.isfile(seqs):
-		raise ValueError('Sequences file not found')
-	threshold = float(args.threshold)
+	# if not args.metrics == '-':
+	# 	output_metrics = str(args.metrics)
+	# else:
+	# 	args.metrics = 'all'
+	# threshold = float(args.threshold)
 	if not os.path.isdir(outpath):
 		os.mkdir(outpath)
 		if not os.path.isdir(outpath):
@@ -156,10 +153,17 @@ def main():
 			acx = args.bgc_acx
 		else:
 			acx = '-'
-	elif not args.bgc_fna and not args.bgc_edx:
-		raise ValueError('No reference sequences or database provided: please include something to align to')
+	elif args.alignment:
+		alignment = args.alignment
+	elif not args.bgc_fna and not args.bgc_edx and not args.alignment:
+		raise ValueError('No reference sequences or database provided.\nPlease include something to align to or the pre-computed alignment file')
 	# Generate the alignment between sequences and BGCs
-	alignment = align_bgcs(temp_path, seqs, acx, edx, cpus)
+	if not alignment:
+		try:
+			os.path.isfile(seqs)
+		except ValueError:
+			print('Sequences file not found')
+		alignment = align_bgcs(temp_path, seqs, acx, edx, cpus)
 
 	# Calculate coverage based on the alignment #
 	# Parse the BGC lengths file
@@ -171,11 +175,13 @@ def main():
 
 	# Parse the alignment file
 	sample_to_gene_cluster_to_row = defaultdict(dict)
+	sample_names = []
 	read_lengths = []
 	with open(alignment) as inf:
 		csv_inf = csv.reader(inf, delimiter="\t")
 		for line in csv_inf:
 			sample_id = line[0].split('_')[0]
+			sample_names.append(sample_id)
 			sample_dict = sample_to_gene_cluster_to_row[sample_id]
 			gene_cluster_id = line[1]
 			if not gene_cluster_id in sample_dict:
@@ -192,17 +198,23 @@ def main():
 	median_read_length = np.median(read_lengths_array)
 
 	# Loop through the data to generate the output table
-	coverage_result = defaultdict(dict)
-	outfile = os.path.join(outpath, 'coverage_result_%s.txt') % datetime
+	# coverage_result = defaultdict(dict)
+	outfile = os.path.join(outpath, 'coverage_result_%s.txt') % timestamp
 	with open(outfile, 'w') as outf:
 		outf.write('sample_id\tbgc_id\tmax_gap\tpercent_coverage\texpected_coverage\tratio_covered_to_expected\n')
-		for sample, bgc in sample_dict:
-			for bgc_id, tally in bgc:
-				max_gap = max_uncovered_region(bgc_id)
-				percent_coverage = get_percent_coverage(bgc_id)
-				predicted_coverage = expected_coverage(bgc_id, median_read_length) * 100
+		for sample in sample_names:
+			sample_dict_parse = sample_to_gene_cluster_to_row[sample_id]
+			for bgc_id in sample_dict_parse:
+				tally = sample_dict_parse[bgc_id]
+				max_gap = max_uncovered_region(tally)
+				print(max_gap)
+				percent_coverage = get_percent_coverage(tally)
+				print(percent_coverage)
+				predicted_coverage = expected_coverage(tally, median_read_length) * 100
+				print(predicted_coverage)
 				coverage_ratio = percent_coverage / predicted_coverage
-				outf.write('%s\t%s\t%d\t%s\t%s\t%s') % (sample, bgc_id, max_gap, percent_coverage, predicted_coverage, coverage_ratio)
+				print(coverage_ratio)
+				outf.write('%s\t%s\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, max_gap, percent_coverage, predicted_coverage, coverage_ratio))
 	print('Coverage analysis complete.')
 
 	# The calls to get the values #
