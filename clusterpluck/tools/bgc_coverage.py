@@ -194,7 +194,7 @@ def main():
 	# coverage_result = defaultdict(dict)
 	outfile = os.path.join(outpath, 'coverage_result_%s.txt') % timestamp
 	with open(outfile, 'w') as outf:
-		outf.write('sample_id\tbgc_id\tmax_gap\tpercent_coverage\texpected_coverage\tratio_covered_to_expected\n')
+		outf.write('sample_id\tbgc_id\tbgc_length\tmax_gap\tpercent_coverage\texpected_coverage\tratio_covered_to_expected\n')
 		sample_names = set(sample_names)
 		for sample in sample_names:
 			sample_dict_parse = sample_to_gene_cluster_to_row[sample]
