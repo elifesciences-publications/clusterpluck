@@ -4,6 +4,7 @@ import argparse
 import os
 import csv
 import datetime
+import shutil
 import numpy as np
 from collections import defaultdict
 from multiprocessing import cpu_count
@@ -17,24 +18,13 @@ def make_arg_parser():
 	parser.add_argument('--bgc_edx', help="The pre-made BURST database file)", required=False)
 	parser.add_argument('--bgc_acx', help="The pre-made BURST accelerator file)", required=False)
 	parser.add_argument('--alignment', help='A pre-calculated all-vs-all alignment file in .b6 format', required=False)
+	parser.add_argument('--debug', help='Keep the temp directory for debugging', default=False, action='store_true', required=False)
 	# parser.add_argument('-b', '--bread', help='Where to find the header for the sequence (default="ref|,|")', default='ref|,|')
 	parser.add_argument('-l', '--lengths', help="The table providing length of each BGC in bp", required=True)
 	parser.add_argument('-o', '--output', help='Directory in which to save the results (default = cwd)', required=False, default='.')
 	# parser.add_argument('-t', '--threshold', help='Coverage threshold at which to accept a cluster alignment (default = 75%)', required=False, default=75, type=float)
 	parser.add_argument('-p', '--threads', help='Number of processors to use for alignment (default = all available)', required=False, default='-')
 	return parser
-
-
-# def compile_ofu_dnasequences(inf_d, bgc, dna_outf):
-# 	fasta_gen = FASTA(inf_d)
-# 	bgc = str(bgc)
-# 	for header, sequence in fasta_gen.read():
-# 		if '.cluster' in header:
-# 			header = header.replace('.cluster', '_cluster')
-# 		if bgc in header:
-# 			dna_outf.write(''.join(['>', header, '\n']))
-# 			dna_outf.write(''.join([sequence, '\n']))
-# 	return dna_outf
 
 
 # Make a database if necessary
@@ -205,8 +195,9 @@ def main():
 	outfile = os.path.join(outpath, 'coverage_result_%s.txt') % timestamp
 	with open(outfile, 'w') as outf:
 		outf.write('sample_id\tbgc_id\tmax_gap\tpercent_coverage\texpected_coverage\tratio_covered_to_expected\n')
+		sample_names = set(sample_names)
 		for sample in sample_names:
-			sample_dict_parse = sample_to_gene_cluster_to_row[sample_id]
+			sample_dict_parse = sample_to_gene_cluster_to_row[sample]
 			for bgc_id in sample_dict_parse:
 				tally = sample_dict_parse[bgc_id]
 				max_gap = max_uncovered_region(tally)
@@ -217,10 +208,11 @@ def main():
 				# print(predicted_coverage)
 				coverage_ratio = percent_coverage / predicted_coverage
 				# print(coverage_ratio)
-				outf.write('%s\t%s\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, max_gap, percent_coverage, predicted_coverage, coverage_ratio))
+				outf.write('%s\t%s\t%d\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, gene_cluster_sizes[bgc_id], max_gap, percent_coverage, predicted_coverage, coverage_ratio))
 	print('Coverage analysis complete.')
-
-	# The calls to get the values #
+	if not args.debug:
+		shutil.rmtree(temp_path)
+	# The calls to get the values #3
 	# max_gap = max_uncovered_region(sample_dict[gene_cluster_id])
 	# percent_coverage = get_percent_coverage(sample_dict[gene_cluster_id])
 	# expected_coverage = expected_coverage(sample_dict[gene_cluster_id], median_read_length) * 100
