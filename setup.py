@@ -4,7 +4,7 @@ import os
 
 __author__ = "Knights Lab"
 __copyright__ = "Copyright (c) 2016--, %s" % __author__
-__credits__ = ["Robin Shields-Cutler", "Benjamin Hillmann", "Dan Knights"]
+__credits__ = ["Robin Shields-Cutler", "Benjamin Hillmann", "Gabe Al-Ghalith", "Dan Knights"]
 __email__ = "cutler.robin@gmail.com"
 __license__ = "MIT"
 __maintainer__ = "Robin Shields-Cutler"
@@ -26,7 +26,7 @@ setup(
 	keywords='',
 	install_requires=['numpy', 'scipy'],
 	entry_points=dict(console_scripts=[
-		'bgc_coverage = clusterpluck.tools.bgc_coverage.py:main',
+		'bgc_coverage = clusterpluck.tools.bgc_coverage:main',
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
 		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq:main',
 		'scrape_antismash_db = clusterpluck.parsers.scrape_antismash_db:main',
