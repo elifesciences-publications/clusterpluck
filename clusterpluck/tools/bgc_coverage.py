@@ -4,7 +4,7 @@ import argparse
 import os
 import csv
 import datetime
-import shutil
+from shutil import rmtree
 import numpy as np
 from collections import defaultdict
 from multiprocessing import cpu_count
@@ -170,15 +170,18 @@ def main():
 	sample_to_gene_cluster_to_row = defaultdict(dict)
 	sample_names = []
 	read_lengths = []
+	sample_cluster_hit_counter = defaultdict(dict)
 	with open(alignment) as inf:
 		csv_inf = csv.reader(inf, delimiter="\t")
 		for line in csv_inf:
 			sample_id = line[0].split('_')[0]
 			sample_names.append(sample_id)
 			sample_dict = sample_to_gene_cluster_to_row[sample_id]
+			bgc_hit_counter = sample_cluster_hit_counter[sample_id]
 			gene_cluster_id = line[1]
 			if not gene_cluster_id in sample_dict:
 				sample_dict[gene_cluster_id] = np.zeros(gene_cluster_sizes[gene_cluster_id], dtype=int)
+				bgc_hit_counter[gene_cluster_id] = 0
 			begin = int(line[9])
 			end = int(line[8])
 			# Reverse complement
@@ -187,6 +190,7 @@ def main():
 				end = int(line[9])
 			read_lengths.append(end-begin)
 			sample_dict[gene_cluster_id][begin:end] += 1
+			bgc_hit_counter[gene_cluster_id] += 1
 	read_lengths_array = np.array(read_lengths, dtype=int)
 	median_read_length = np.median(read_lengths_array)
 
@@ -194,12 +198,15 @@ def main():
 	# coverage_result = defaultdict(dict)
 	outfile = os.path.join(outpath, 'coverage_result_%s.txt') % timestamp
 	with open(outfile, 'w') as outf:
-		outf.write('sample_id\tbgc_id\tbgc_length\tmax_gap\tpercent_coverage\texpected_coverage\tratio_covered_to_expected\n')
+		outf.write('sample_id\tbgc_id\tbgc_length\tmax_gap\thits_to_bgc\ttotal_base_coverage\tpercent_coverage\texpected_coverage\tratio_covered_to_expected\n')
 		sample_names = set(sample_names)
 		for sample in sample_names:
 			sample_dict_parse = sample_to_gene_cluster_to_row[sample]
+			sample_hit_counts = sample_cluster_hit_counter[sample]
 			for bgc_id in sample_dict_parse:
 				tally = sample_dict_parse[bgc_id]
+				hits_to_bgc = sample_hit_counts[bgc_id]
+				total_base_coverage = int(np.sum(tally))  # Need this?
 				max_gap = max_uncovered_region(tally)
 				# print(max_gap)
 				percent_coverage = get_percent_coverage(tally)
@@ -208,18 +215,15 @@ def main():
 				# print(predicted_coverage)
 				coverage_ratio = percent_coverage / predicted_coverage
 				# print(coverage_ratio)
-				outf.write('%s\t%s\t%d\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, gene_cluster_sizes[bgc_id], max_gap, percent_coverage, predicted_coverage, coverage_ratio))
+				outf.write('%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, gene_cluster_sizes[bgc_id], max_gap, hits_to_bgc, total_base_coverage, percent_coverage, predicted_coverage, coverage_ratio))
 	print('Coverage analysis complete.')
 	if not args.debug:
-		shutil.rmtree(temp_path)
-	# The calls to get the values #3
+		rmtree(temp_path)
+	# The calls to get the values #
 	# max_gap = max_uncovered_region(sample_dict[gene_cluster_id])
 	# percent_coverage = get_percent_coverage(sample_dict[gene_cluster_id])
 	# expected_coverage = expected_coverage(sample_dict[gene_cluster_id], median_read_length) * 100
 	# coverage_ratio = percent_coverage / expected_coverage
-
-	# TODO: Filter the alignment by predicted profiles?
-	# Or just see what is there?
 
 
 if __name__ == '__main__':
