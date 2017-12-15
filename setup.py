@@ -26,6 +26,7 @@ setup(
 	keywords='',
 	install_requires=['numpy', 'scipy'],
 	entry_points=dict(console_scripts=[
+		'bgc_coverage = clusterpluck.tools.bgc_coverage.py:main',
 		'orf_matrix_collapse = clusterpluck.scripts.orf_matrix_collapse:main',
 		'extract_cluster_aaseq = clusterpluck.parsers.extract_cluster_aaseq:main',
 		'scrape_antismash_db = clusterpluck.parsers.scrape_antismash_db:main',
