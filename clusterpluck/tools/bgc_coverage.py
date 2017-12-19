@@ -17,7 +17,7 @@ def make_arg_parser():
 	parser.add_argument('--bgc_fna', help="The BGC DNA fasta file (all BGCs in one multi-fasta file)", required=False)
 	parser.add_argument('--bgc_edx', help="The pre-made BURST database file)", required=False)
 	parser.add_argument('--bgc_acx', help="The pre-made BURST accelerator file)", required=False)
-	parser.add_argument('--alignment', help='A pre-calculated all-vs-all alignment file in .b6 format', required=False)
+	parser.add_argument('-a', '--alignment', help='A pre-calculated all-vs-all alignment file in .b6 format', required=False)
 	parser.add_argument('--debug', help='Keep the temp directory for debugging', default=False, action='store_true', required=False)
 	# parser.add_argument('-b', '--bread', help='Where to find the header for the sequence (default="ref|,|")', default='ref|,|')
 	parser.add_argument('-l', '--lengths', help="The table providing length of each BGC in bp", required=True)
@@ -216,7 +216,7 @@ def main():
 				coverage_ratio = percent_coverage / predicted_coverage
 				# print(coverage_ratio)
 				outf.write('%s\t%s\t%d\t%d\t%d\t%d\t%s\t%s\t%s\n' % (sample, bgc_id, gene_cluster_sizes[bgc_id], max_gap, hits_to_bgc, total_base_coverage, percent_coverage, predicted_coverage, coverage_ratio))
-	print('Coverage analysis complete.')
+	print('Coverage analysis complete. Find your results at:\n%s' % outfile)
 	if not args.debug:
 		rmtree(temp_path)
 	# The calls to get the values #
