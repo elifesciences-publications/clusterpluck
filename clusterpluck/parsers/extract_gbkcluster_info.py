@@ -4,7 +4,7 @@
 # Extract the DNA sequence from the *.gbk output files of antiSMASH
 # and return a txt file with only the concatenated sequence and FASTA-like header.
 
-usage = 'extract_gbkcluster_seq.py *.gbk'
+usage = 'extract_gbkcluster_info.py *.gbk'
 
 import sys
 import os

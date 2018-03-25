@@ -40,7 +40,7 @@ def cluster_ofus(inf2, dd):
 	next(hcsv, None)
 	for line in hcsv:
 		name = line[0]
-		refseq_id = '_'.join(name.split('_')[0:2])
+		refseq_id = '_'.join(name.split('_')[0:3])
 		ofu = int(line[1])
 		ofu_name = ('ofu', str('%05d' % ofu))
 		ofu_names.append(''.join(ofu_name))
@@ -107,6 +107,11 @@ def main():
 					else:
 						strain_label.append(organism)
 				else:
+					# TODO: Finish the regex for refseq id
+					# p = re.compile(r"N\w\_[\w+\d+]*\.\d")
+					# m = p.search(refseq_id)  # searches using the regex defined above
+					# refseq_id_extract = ''.join(m)
+
 					organism = refseq_to_name(refseq_id, db=db, nt=nt)
 					ncbi_tid = refseq_to_tid(refseq_id, db=db)
 					ncbi_tid = str(ncbi_tid)

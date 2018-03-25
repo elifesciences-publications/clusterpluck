@@ -53,6 +53,8 @@ def list_organisms(ofus, hclus, nt_cat, typetable, outpath, cut_h):
 		ofu = str(ofu)
 		if ofu.startswith('ofu'):
 			ofu_n = str(ofu.replace('ofu', ''))
+		elif ofu.startswith('ofu_'):
+			ofu_n = str(ofu.replace('ofu', ''))
 		else:
 			ofu_n = ofu
 		bgcs = bgc_dd[ofu_n]
@@ -206,6 +208,8 @@ def main():
 			for ofu in ofu_list:
 				i += 1
 				if ofu.startswith('ofu'):
+					ofu_n = str(ofu.replace('ofu', ''))
+				elif ofu.startswith('ofu_'):
 					ofu_n = str(ofu.replace('ofu', ''))
 				else:
 					ofu_n = ofu
