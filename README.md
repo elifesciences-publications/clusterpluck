@@ -44,6 +44,10 @@ conda install blast
 conda install -c bioconda blast=2.5.0
 ```
 
+## To cite:
+Shields-Cutler RR; Hillmann B, Al-Galith GA, Knights D. (2018) Predicted secondary metabolite profiles for microbiome datasets.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1208675.svg)](https://doi.org/10.5281/zenodo.1208675)
+
 ______________
 
 1. Weber T, Blin K, Duddela S, Krug D, Kim HU, Bruccoleri R, Lee SY, Fischbach MA, Müller R, Wohlleben W, Breitling R. (2015). antiSMASH 3.0—a comprehensive resource for the genome mining of biosynthetic gene clusters. Nucleic acids research, 43(W1), W237-W243.
