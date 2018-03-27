@@ -45,7 +45,7 @@ conda install -c bioconda blast=2.5.0
 ```
 
 ## To cite:
-`Shields-Cutler RR; Hillmann B, Al-Galith GA, Knights D. (2018) Predicted secondary metabolite profiles for microbiome datasets. DOI:10.5281/zenodo.1208675`
+`Shields-Cutler RR; Hillmann B, Al-Ghalith GA, Knights D. (2018) Predicted secondary metabolite profiles for microbiome datasets. DOI:10.5281/zenodo.1208675`
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1208675.svg)](https://doi.org/10.5281/zenodo.1208675)
 
 ______________
