@@ -1,3 +1,8 @@
+
+
+### This code is associated with the paper from Zhang et al., "Antibiotic-induced acceleration of type 1 diabetes alters maturation of innate intestinal immunity". eLife, 2018. http://dx.doi.org/10.7554/eLife.37816
+
+
 clusterpluck
 =======
 ##### A Python package designed to efficiently process antiSMASH(1) results from large genome databases, with the ability to group homologous clusters into Operational Functional Units (OFUs).
